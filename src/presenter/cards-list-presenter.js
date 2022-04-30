@@ -2,17 +2,16 @@ import {render} from '../render';
 import CardView from '../view/card-view';
 
 export default class CardsListPresenter {
-  init(container, cardsCount) {
+  init(container, cards) {
     const cardListContainer =
       container
         .getElement()
         .querySelector('.films-list__container');
 
-    Array(cardsCount)
-      .fill({})
-      .forEach(() => {
-        const card = new CardView();
-        render(card, cardListContainer);
+    cards
+      .forEach((card) => {
+        const cardView = new CardView(card);
+        render(cardView, cardListContainer);
       });
   }
 }
