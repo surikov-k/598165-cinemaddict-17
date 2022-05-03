@@ -4,10 +4,11 @@ const COMMENTS_COUNT = 50;
 
 export default class CommentsModel {
   #cards = null;
-  #comments = Array.from({length: COMMENTS_COUNT}, generateComment);
+  #comments = null;
 
   constructor(cards) {
     this.#cards = cards;
+    this.#comments = Array.from({length: COMMENTS_COUNT}, generateComment);
   }
 
   getComments = (cardId) =>{

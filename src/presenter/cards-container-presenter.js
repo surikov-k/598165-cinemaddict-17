@@ -22,11 +22,13 @@ export default class CardsContainerPresenter {
     render(topListView, container);
     render(popularListView, container);
 
-    new CardsListPresenter().init(cardsListView, this.#cards);
-    new CardsListPresenter().init(topListView, this.#cards.slice(0, 2));
-    new CardsListPresenter().init(popularListView, this.#cards.slice(0, 2));
-
     const detailsPresenter = new DetailsPresenter(this.#cards);
-    detailsPresenter.init(container);
+
+    new CardsListPresenter(this.#cards, detailsPresenter)
+      .init(cardsListView);
+    new CardsListPresenter(this.#cards.slice(0, 2), detailsPresenter)
+      .init(topListView);
+    new CardsListPresenter(this.#cards.slice(0, 2), detailsPresenter)
+      .init(popularListView);
   }
 }

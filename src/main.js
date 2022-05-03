@@ -6,7 +6,6 @@ import ProfileView from './view/profile-view';
 import SortView from './view/sort-view';
 import {render} from './render';
 
-
 const siteMainElement = document.querySelector('.main');
 const header = document.querySelector('.header');
 
@@ -20,5 +19,5 @@ render(cardsContainerView, siteMainElement);
 const cardsContainerPresenter = new CardsContainerPresenter();
 
 cardsContainerPresenter
-  .init(cardsContainerView.element,  new CardsModel());
+  .init(cardsContainerView.element, new CardsModel());
 

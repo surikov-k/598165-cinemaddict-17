@@ -1,16 +1,27 @@
-import {render} from '../render';
 import CardView from '../view/card-view';
+import {render} from '../render';
 
 export default class CardsListPresenter {
-  init(container, cards) {
-    const cardListContainer =
-      container
-        .element
-        .querySelector('.films-list__container');
+  #cards = null;
+  #detailsPresenter = null;
 
-    cards
+  constructor(cards, detailsPresenter) {
+    this.#cards = cards;
+    this.#detailsPresenter = detailsPresenter;
+  }
+
+  init(container) {
+    const cardListContainer =
+      container.element.querySelector('.films-list__container');
+
+    this.#cards
       .forEach((card) => {
         const cardView = new CardView(card);
+        cardView.element.querySelector('.film-card__link')
+          .addEventListener('click', (evt) => {
+            this.#detailsPresenter.open(evt.currentTarget.dataset.cardId);
+          });
+
         render(cardView, cardListContainer);
       });
   }
