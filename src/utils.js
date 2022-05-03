@@ -39,37 +39,58 @@ const getRandom = (a, b) => {
 
 const getRandomElementFrom = (array) => array[getRandomInt(0, array.length - 1)];
 
-const getTextGenerator = (template) => {
-  let result = [];
-  return (min, max) => {
-    const descriptionLength = getRandomInt(min, max);
-    while (result.length < descriptionLength) {
-      const part = getRandomElementFrom(template);
-      if (!result.includes(part)) {
-        result.push(part);
-      }
-    }
-    result = result.join(', ');
-    return `${result.charAt(0).toUpperCase()}${result.slice(1)}.`;
-  };
+const capitalizeFirstLetter = (sentence) => `${sentence.charAt(0).toUpperCase()}${sentence.slice(1)}`;
+
+const getUniqueRandomFromArrayGenerator = (array) => {
+  const getRandomIndex = getUniqueRandomFromRange(array.length - 1);
+  return () => array[getRandomIndex.next().value];
 };
 
-const getIdGenerator =  () => {
-  let id = 0;
-  return () => id++;
+const getTextGenerator = (textArray) => (min, max) => {
+  const textLength = getRandomInt(min,max);
+  const getRandomText = getUniqueRandomFromArrayGenerator(textArray);
+  const text = Array
+    .from({length: textLength}, getRandomText);
+
+  return  `${capitalizeFirstLetter(text.join(', '))}.`;
 };
+
+function* idGenerator () {
+  let id = 0;
+  while (true) {
+    yield id++;
+  }
+}
 
 const getRandomDate = (start, end) => new Date(getRandom(start.getTime(), end.getTime()));
+
+function* getUniqueRandomFromRange(range) {
+  const generated = [];
+  let random;
+  while (true) {
+    do {
+      random = getRandomInt(0, range - 1);
+
+      if (generated.length >= range) {
+        generated.length = 0;
+      }
+    } while (generated.includes(random));
+    generated.push(random);
+    yield random;
+  }
+}
 
 export {
   formatDate,
   formatDuration,
-  getIdGenerator,
   getRandom,
   getRandomDate,
   getRandomElementFrom,
   getRandomInt,
   getTextGenerator,
+  getUniqueRandomFromArrayGenerator,
+  getUniqueRandomFromRange,
   humanizeDate,
+  idGenerator,
   truncateText,
 };

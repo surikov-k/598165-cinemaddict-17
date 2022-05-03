@@ -1,13 +1,14 @@
-import {render} from '../render';
+import CommentsModel from '../model/comments-model';
 import DetailsView from '../view/details-view';
+import {render} from '../render';
 
 export default class DetailsPresenter {
-  constructor(cards, comments) {
+  constructor(cards) {
     this.cards = cards;
-    this.comments = comments;
+    this.commentsModel = new CommentsModel(this.cards);
   }
 
-  opened = false;
+  isOpened = false;
 
   init(container) {
     container
@@ -22,23 +23,22 @@ export default class DetailsPresenter {
   }
 
   open(cardId) {
-    if (this.opened) {
+    if (this.isOpened) {
       return;
     }
-    this.opened = true;
+    this.isOpened = true;
 
     const detailsCard = this.cards
       .find((card) => card.id === cardId);
 
-    const detailsComments = this.comments
-      .filter((comment) => detailsCard.comments.includes(comment.id));
+    const detailsComments = this.commentsModel.getComments(cardId);
 
     const detailsView = new DetailsView(detailsCard, detailsComments);
 
     detailsView.getElement()
       .querySelector('.film-details__close-btn')
       .addEventListener('click', () => {
-        this.opened = false;
+        this.isOpened = false;
         detailsView.getElement().remove();
       });
 

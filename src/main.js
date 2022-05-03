@@ -1,7 +1,6 @@
 import CardsContainerPresenter from './presenter/cards-container-presenter';
 import CardsContainerView from './view/cards-container-view';
 import CardsModel from './model/cards-model';
-import CommentsModel from './model/comments-model';
 import FilterView from './view/filter-view';
 import ProfileView from './view/profile-view';
 import SortView from './view/sort-view';
@@ -21,5 +20,5 @@ render(cardsContainerView, siteMainElement);
 const cardsContainerPresenter = new CardsContainerPresenter();
 
 cardsContainerPresenter
-  .init(cardsContainerView.getElement(),  new CardsModel(), new CommentsModel());
+  .init(cardsContainerView.getElement(),  new CardsModel());
 
