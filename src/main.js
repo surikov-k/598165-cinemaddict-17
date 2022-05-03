@@ -20,5 +20,5 @@ render(cardsContainerView, siteMainElement);
 const cardsContainerPresenter = new CardsContainerPresenter();
 
 cardsContainerPresenter
-  .init(cardsContainerView.getElement(),  new CardsModel());
+  .init(cardsContainerView.element,  new CardsModel());
 

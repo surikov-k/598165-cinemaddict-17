@@ -28,7 +28,6 @@ const createTemplate = (card) => {
     return '';
   };
 
-
   return `
   <article class="film-card" data-card-id = ${id}>
     <a class="film-card__link">
@@ -59,23 +58,25 @@ const createTemplate = (card) => {
 };
 
 export default class CardView {
+  #element = null;
+  #card = null;
 
   constructor(card) {
-    this.card = card;
+    this.#card = card;
   }
 
-  getTemplate() {
-    return createTemplate(this.card);
+  get template() {
+    return createTemplate(this.#card);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
-    return this.element;
+    return this.#element;
   }
 
   removeElement() {
-    this.element = null;
+    this.#element = null;
   }
 }

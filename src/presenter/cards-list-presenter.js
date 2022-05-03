@@ -5,7 +5,7 @@ export default class CardsListPresenter {
   init(container, cards) {
     const cardListContainer =
       container
-        .getElement()
+        .element
         .querySelector('.films-list__container');
 
     cards

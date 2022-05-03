@@ -3,7 +3,9 @@ const CARDS_COUNT = 10;
 
 
 export default class CardsModel {
-  cards = Array.from({length: CARDS_COUNT}, generateCard);
+  #cards = Array.from({length: CARDS_COUNT}, generateCard);
 
-  getCards = () => this.cards;
+  get cards() {
+    return  this.#cards;
+  }
 }

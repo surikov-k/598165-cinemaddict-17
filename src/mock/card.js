@@ -22,7 +22,7 @@ import {
 
 const id = idGenerator();
 
-const commentId = getUniqueRandomFromRange(CommentsModel.getCommentsCount());
+const commentId = getUniqueRandomFromRange(CommentsModel.getCommentsNumber());
 
 const generateCard = () => {
   const generateDescription = getTextGenerator(DESCRIPTION_PARTS);
