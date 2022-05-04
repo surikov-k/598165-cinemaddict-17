@@ -4,7 +4,7 @@ const createTemplate = () => (`
     <section class="films"></section>
 `);
 
-export default class CardsContainerView {
+export default class MainBoardView {
   #element = null;
 
   get template() {

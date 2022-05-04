@@ -1,7 +1,8 @@
-import CardsContainerPresenter from './presenter/cards-container-presenter';
-import CardsContainerView from './view/cards-container-view';
 import CardsModel from './model/cards-model';
+import CommentsModel from './model/comments-model';
 import FilterView from './view/filter-view';
+import MainBoardPresenter from './presenter/main-board-presenter';
+import MainBoardView from './view/main-board-view';
 import ProfileView from './view/profile-view';
 import SortView from './view/sort-view';
 import {render} from './render';
@@ -13,11 +14,11 @@ render(new ProfileView(), header);
 render(new FilterView(), siteMainElement);
 render(new SortView(), siteMainElement);
 
-const cardsContainerView = new CardsContainerView();
-render(cardsContainerView, siteMainElement);
+const mainBoardView = new MainBoardView();
+render(mainBoardView, siteMainElement);
 
-const cardsContainerPresenter = new CardsContainerPresenter();
+const mainBoardPresenter = new MainBoardPresenter(new CardsModel(), new CommentsModel());
 
-cardsContainerPresenter
-  .init(cardsContainerView.element, new CardsModel());
+mainBoardPresenter
+  .init(mainBoardView.element);
 

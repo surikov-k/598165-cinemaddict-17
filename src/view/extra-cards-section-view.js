@@ -1,17 +1,22 @@
 import {createElement} from '../render';
 
-const createTemplate = () => (`
-  <section class="films-list">
-    <h2 class="films-list__title visually-hidden">All movies. Upcoming</h2>
+const createTemplate = (title) => (`
+  <section class="films-list films-list--extra">
+    <h2 class="films-list__title">${title}</h2>
     <div class="films-list__container"></div>
-    </section>
+   </section>
 `);
 
-export default class CardsListView {
+export default class ExtraCardsSectionView {
   #element = null;
+  #title = null;
+
+  constructor(title) {
+    this.#title = title;
+  }
 
   get template() {
-    return createTemplate();
+    return createTemplate(this.#title);
   }
 
   get element() {

@@ -1,4 +1,3 @@
-import CommentsModel from '../model/comments-model';
 import DetailsView from '../view/details-view';
 import {render} from '../render';
 
@@ -9,9 +8,9 @@ export default class DetailsPresenter {
   #detailsView = null;
   #commentInput = null;
 
-  constructor(cards) {
-    this.#cards = cards;
-    this.#commentsModel = new CommentsModel(this.#cards);
+  constructor(cardsModel, commentsModel) {
+    this.#cards = [...cardsModel.cards];
+    this.#commentsModel = commentsModel;
   }
 
   open(cardId) {
@@ -24,7 +23,7 @@ export default class DetailsPresenter {
     const detailsCard = this.#cards
       .find((card) => card.id === cardId);
 
-    const detailsComments = this.#commentsModel.getComments(cardId);
+    const detailsComments = this.#getCardComments(detailsCard);
 
     this.#detailsView = new DetailsView(detailsCard, detailsComments);
     this.#commentInput = this.#detailsView.element
@@ -60,4 +59,12 @@ export default class DetailsPresenter {
   #toggleScroll = () => {
     document.body.classList.toggle('hide-overflow');
   };
+
+  #getCardComments(card) {
+    const comments = [];
+    card.comments.forEach((commentId) => {
+      comments.push(this.#commentsModel.getComment(commentId));
+    });
+    return comments;
+  }
 }
