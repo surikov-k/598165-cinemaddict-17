@@ -3,7 +3,6 @@ import {formatDate, truncateText, formatDuration} from '../utils';
 
 const createTemplate = (card) => {
   const {
-    id,
     comments,
     filmInfo: {
       description,
@@ -30,7 +29,7 @@ const createTemplate = (card) => {
 
   return `
   <article class="film-card">
-    <a class="film-card__link" data-card-id = ${id}>
+    <a class="film-card__link">
       <h3 class="film-card__title">${title}</h3>
       <p class="film-card__rating">${totalRating}</p>
       <p class="film-card__info">
