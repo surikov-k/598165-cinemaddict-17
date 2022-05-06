@@ -11,8 +11,6 @@ export default class CardListPresenter {
   }
 
   render(container) {
-    container.innerHTML = '';
-
     this.#cards
       .forEach((card) => {
         const cardView = new CardView(card);

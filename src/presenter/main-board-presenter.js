@@ -3,7 +3,8 @@ import ExtraCardsSectionView from '../view/extra-cards-section-view';
 import ExtraSectionPresenter from './extra-section-presenter';
 import MainCardsSectionView from '../view/main-cards-section-view';
 import MainSectionPresenter from './main-section-presenter';
-import {render} from '../render';
+import {render, RenderPosition} from '../render';
+import MainBoardHeaderView from '../view/main-board-header-view';
 
 export default class MainBoardPresenter {
   #cardsModel = null;
@@ -18,11 +19,18 @@ export default class MainBoardPresenter {
   init(container) {
     this.#cards = [...this.#cardsModel.cards];
 
+    const mainBoardHeader = new MainBoardHeaderView(this.#cards);
     const cardsListView = new MainCardsSectionView();
+    render(cardsListView, container);
+    render(mainBoardHeader, cardsListView.element, RenderPosition.AFTERBEGIN);
+
+    if (!this.#cards.length) {
+      return;
+    }
+
     const topListView = new ExtraCardsSectionView('Top rated');
     const popularListView = new ExtraCardsSectionView('Most commented');
 
-    render(cardsListView, container);
     render(topListView, container);
     render(popularListView, container);
 

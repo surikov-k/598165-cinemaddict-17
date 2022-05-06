@@ -1,9 +1,11 @@
-import {generateComment} from '../mock/comment';
-
 const COMMENTS_COUNT = 50;
 
 export default class CommentsModel {
-  #comments = Array.from({length: COMMENTS_COUNT}, generateComment);
+  #comments = null;
+
+  constructor(comments) {
+    this.#comments = comments;
+  }
 
   get comments () {
     return this.#comments;

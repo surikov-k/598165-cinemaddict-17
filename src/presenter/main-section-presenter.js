@@ -26,8 +26,8 @@ export default class MainSectionPresenter {
     this.#render(this.#cards.slice(0, this.#renderedCards));
 
     this.#moreButtonView.element.addEventListener('click', () => {
+      this.#render(this.#cards.slice(this.#renderedCards, this.#renderedCards + CARDS_PER_CLICK));
       this.#renderedCards += CARDS_PER_CLICK;
-      this.#render(this.#cards.slice(0, this.#renderedCards));
     }
     );
   }
@@ -35,7 +35,7 @@ export default class MainSectionPresenter {
   #render(cards) {
     new CardListPresenter(cards, this.#detailsPresenter)
       .render(this.#listContainer);
-    if (this.#renderedCards >= this.#cards.length) {
+    if (this.#renderedCards + CARDS_PER_CLICK >= this.#cards.length) {
       this.#moreButtonView.element.remove();
     }
   }

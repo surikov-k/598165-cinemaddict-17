@@ -1,9 +1,9 @@
-import {generateCard} from '../mock/card';
-const CARDS_COUNT = 12;
-
-
 export default class CardsModel {
-  #cards = Array.from({length: CARDS_COUNT}, generateCard);
+  #cards = null;
+
+  constructor(cards) {
+    this.#cards = cards;
+  }
 
   get cards() {
     return  this.#cards;
