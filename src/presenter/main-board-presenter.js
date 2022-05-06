@@ -3,8 +3,8 @@ import ExtraCardsSectionView from '../view/extra-cards-section-view';
 import ExtraSectionPresenter from './extra-section-presenter';
 import MainCardsSectionView from '../view/main-cards-section-view';
 import MainSectionPresenter from './main-section-presenter';
-import {render, RenderPosition} from '../render';
 import MainBoardHeaderView from '../view/main-board-header-view';
+import {render, RenderPosition} from '../framework/render';
 
 export default class MainBoardPresenter {
   #cardsModel = null;

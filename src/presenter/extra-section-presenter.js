@@ -15,8 +15,8 @@ export default class ExtraSectionPresenter {
     this.#listContainer = container.element
       .querySelector('.films-list__container');
 
-    new CardListPresenter(this.#cards, this.#detailsPresenter)
-      .render(this.#listContainer);
+    new CardListPresenter(this.#listContainer, this.#detailsPresenter)
+      .addCards(this.#cards);
   }
 }
 

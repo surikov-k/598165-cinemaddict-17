@@ -1,5 +1,5 @@
-import {createElement} from '../render';
 import {formatDuration, formatDate, humanizeDate} from '../utils';
+import AbstractView from '../framework/view/abstract-view';
 
 const createTemplate = (card, comments) => {
   const {
@@ -178,12 +178,12 @@ const createTemplate = (card, comments) => {
 `;
 };
 
-export default class DetailsView {
-  #element = null;
+export default class DetailsView extends AbstractView{
   #card = null;
   #comments = null;
 
   constructor(card, comments) {
+    super();
     this.#card = card;
     this.#comments = comments;
   }
@@ -192,14 +192,22 @@ export default class DetailsView {
     return createTemplate(this.#card, this.#comments);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-    return this.#element;
-  }
+  setCloseHandler = (callback) => {
+    this._callback.close = callback;
+    this.element.querySelector('.film-details__close-btn')
+      .addEventListener('click', this.#closeHandler);
+  };
 
-  removeElement() {
-    this.#element = null;
-  }
+  #closeHandler = (evt) => {
+    evt.preventDefault();
+    this.toggleScroll();
+    this._callback.close();
+  };
+
+  toggleScroll = () => {
+    document.body.classList.toggle('hide-overflow');
+  };
+
+  isInputActive = () => document.activeElement === this.element
+    .querySelector('.film-details__comment-input');
 }

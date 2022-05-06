@@ -1,26 +1,25 @@
 import CardView from '../view/card-view';
-import {render} from '../render';
+import {render} from '../framework/render';
 
 export default class CardListPresenter {
-  #cards = null;
+  #container = null;
   #detailsPresenter = null;
 
-  constructor(cards, detailsPresenter) {
-    this.#cards = cards;
+  constructor(container, detailsPresenter) {
+    this.#container = container;
     this.#detailsPresenter = detailsPresenter;
   }
 
-  render(container) {
-    this.#cards
+  addCards(cards) {
+    cards
       .forEach((card) => {
         const cardView = new CardView(card);
 
-        cardView.element.querySelector('.film-card__link')
-          .addEventListener('click', () => {
-            this.#detailsPresenter.open(card.id);
-          });
+        cardView.setOpenDetailsHandler(() => {
+          this.#detailsPresenter.open(card);
+        });
 
-        render(cardView, container);
+        render(cardView, this.#container);
       });
   }
 }

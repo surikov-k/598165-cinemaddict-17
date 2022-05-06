@@ -1,5 +1,5 @@
-import {createElement} from '../render';
 import {formatDate, truncateText, formatDuration} from '../utils';
+import AbstractView from '../framework/view/abstract-view';
 
 const createTemplate = (card) => {
   const {
@@ -56,11 +56,11 @@ const createTemplate = (card) => {
 `;
 };
 
-export default class CardView {
-  #element = null;
+export default class CardView extends AbstractView{
   #card = null;
 
   constructor(card) {
+    super();
     this.#card = card;
   }
 
@@ -68,14 +68,14 @@ export default class CardView {
     return createTemplate(this.#card);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-    return this.#element;
-  }
+  setOpenDetailsHandler = (callback) => {
+    this._callback.openDetails = callback;
+    this.element.querySelector('.film-card__link')
+      .addEventListener('click', this.#openDetailsHandler);
+  };
 
-  removeElement() {
-    this.#element = null;
-  }
+  #openDetailsHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.openDetails();
+  };
 }
