@@ -24,25 +24,15 @@ export default class MainBoardPresenter {
     render(cardsListView, container);
     render(mainBoardHeader, cardsListView.element, RenderPosition.AFTERBEGIN);
 
-    if (!this.#cards.length) {
-      return;
-    }
-
-    const topListView = new ExtraCardsSectionView('Top rated');
-    const popularListView = new ExtraCardsSectionView('Most commented');
-
-    render(topListView, container);
-    render(popularListView, container);
-
     const detailsPresenter = new DetailsPresenter(this.#cardsModel, this.#commentsModel);
 
     new MainSectionPresenter(this.#cards, detailsPresenter)
       .init(cardsListView);
 
     new ExtraSectionPresenter(this.#cardsModel.getTopRated(2), detailsPresenter)
-      .init(topListView);
+      .init(container, new ExtraCardsSectionView('Top rated'));
 
     new ExtraSectionPresenter(this.#cardsModel.getMostCommented(2), detailsPresenter)
-      .init(popularListView);
+      .init(container, new ExtraCardsSectionView('Most commented'));
   }
 }

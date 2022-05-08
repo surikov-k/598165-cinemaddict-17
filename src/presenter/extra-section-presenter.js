@@ -1,5 +1,5 @@
 import CardListPresenter from './card-list-presenter';
-
+import {render} from '../framework/render';
 
 export default class ExtraSectionPresenter {
   #cards = null;
@@ -11,8 +11,13 @@ export default class ExtraSectionPresenter {
     this.#detailsPresenter = detailsPresenter;
   }
 
-  init(container) {
-    this.#listContainer = container.element
+  init(container, extraSection) {
+    if (!this.#cards.length) {
+      return;
+    }
+    render(extraSection, container);
+
+    this.#listContainer = extraSection.element
       .querySelector('.films-list__container');
 
     new CardListPresenter(this.#listContainer, this.#detailsPresenter)

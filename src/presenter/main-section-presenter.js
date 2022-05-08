@@ -1,8 +1,7 @@
+import {CARDS_PER_CLICK} from '../const';
 import CardListPresenter from './card-list-presenter';
 import MoreButtonView from '../view/more-button-view';
 import {remove, render, RenderPosition} from '../framework/render';
-
-const CARDS_PER_CLICK = 5;
 
 export default class MainSectionPresenter {
   #cardListPresenter = null;
@@ -18,6 +17,9 @@ export default class MainSectionPresenter {
   }
 
   init(container) {
+    if (!this.#cards.length) {
+      return;
+    }
     this.#listContainer = container.element
       .querySelector('.films-list__container');
 
