@@ -1,12 +1,14 @@
 import {
   idGenerator,
   getRandom,
-  getRandomDate,
   getRandomElementFrom,
   getRandomInt,
-  getTextGenerator, getUniqueRandomFromRange, getUniqueRandomFromArrayGenerator,
-} from '../utils';
-import CommentsModel from '../model/comments-model';
+  getUniqueRandomFromRange, getUniqueRandomFromArrayGenerator,
+} from '../utils/common';
+
+import {getTextGenerator} from '../utils/text';
+import {getRandomDate} from '../utils/datetime';
+
 import {
   ACTORS,
   COUNTRIES,
@@ -19,6 +21,8 @@ import {
   TITLE_ENDINGS,
   WRITERS
 } from './card-data.js';
+
+import CommentsModel from '../model/comments-model';
 
 const id = idGenerator();
 

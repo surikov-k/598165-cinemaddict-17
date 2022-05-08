@@ -1,3 +1,4 @@
+import {CARDS_COUNT, COMMENTS_COUNT} from './const';
 import CardsModel from './model/cards-model';
 import CommentsModel from './model/comments-model';
 import FilterView from './view/filter-view';
@@ -7,19 +8,18 @@ import ProfileView from './view/profile-view';
 import SortView from './view/sort-view';
 import {generateCard} from './mock/card';
 import {generateComment} from './mock/comment';
+import {generateFilter} from './mock/filter';
 import {render} from './framework/render';
-
-const CARDS_COUNT = 12;
-const COMMENTS_COUNT = 50;
 
 const cards = Array.from({length: CARDS_COUNT}, generateCard);
 const comments = Array.from({length: COMMENTS_COUNT}, generateComment);
+const filter = generateFilter(cards);
 
 const siteMainElement = document.querySelector('.main');
 const header = document.querySelector('.header');
 
 render(new ProfileView(), header);
-render(new FilterView(), siteMainElement);
+render(new FilterView(filter), siteMainElement);
 render(new SortView(), siteMainElement);
 
 const mainBoardView = new MainBoardView();

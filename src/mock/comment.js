@@ -1,8 +1,6 @@
-import {
-  getRandomDate,
-  getRandomElementFrom,
-  getTextGenerator, idGenerator
-} from '../utils';
+import {getRandomElementFrom, idGenerator} from '../utils/common';
+import {getTextGenerator} from '../utils/text';
+import {getRandomDate} from '../utils/datetime';
 
 import {
   COMMENT_TEXT_PARTS,

@@ -1,5 +1,5 @@
-import {formatDuration, formatDate, humanizeDate} from '../utils';
 import AbstractView from '../framework/view/abstract-view';
+import {formatDate, formatDuration, humanizeDate} from '../utils/datetime';
 
 const createTemplate = (card, comments) => {
   const {
@@ -23,7 +23,6 @@ const createTemplate = (card, comments) => {
       favorite
     }
   } = card;
-
 
   const getGenresList = (genresList) => genresList
     .map((genre) => `<span class="film-details__genre">${genre}</span>`)
@@ -53,7 +52,6 @@ const createTemplate = (card, comments) => {
         <p class="film-details__comment-text">${text}</p>
         <p class="film-details__comment-info">
           <span class="film-details__comment-author">${author}</span>
-<!--          <span class="film-details__comment-day">${formatDate(commentDate, 'YYYY[/]MM[/]DD HH:mm')}</span>-->
           <span class="film-details__comment-day">${humanizeDate(commentDate)}</span>
           <button class="film-details__comment-delete">Delete</button>
         </p>

@@ -1,5 +1,6 @@
-import {formatDate, truncateText, formatDuration} from '../utils';
 import AbstractView from '../framework/view/abstract-view';
+import {truncateText} from '../utils/text';
+import {formatDate, formatDuration} from '../utils/datetime';
 
 const createTemplate = (card) => {
   const {
