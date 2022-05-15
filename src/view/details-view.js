@@ -112,7 +112,7 @@ const createTemplate = (card, comments) => {
                 <td class="film-details__cell">${releaseCountry}</td>
               </tr>
               <tr class="film-details__row">
-                <td class="film-details__term">Genres</td>
+                <td class="film-details__term">${genres.length > 1 ? 'Genres' : 'Genre'}</td>
                 <td class="film-details__cell">
                   ${getGenresList(genres)}
                   </td>
@@ -198,14 +198,42 @@ export default class DetailsView extends AbstractView{
 
   #closeHandler = (evt) => {
     evt.preventDefault();
-    this.toggleScroll();
+    this.unlockScroll();
     this._callback.close();
   };
 
-  toggleScroll = () => {
-    document.body.classList.toggle('hide-overflow');
+  lockScroll = () => {
+    document.body.classList.add('hide-overflow');
+  };
+
+  unlockScroll = () => {
+    document.body.classList.remove('hide-overflow');
   };
 
   isInputActive = () => document.activeElement === this.element
     .querySelector('.film-details__comment-input');
+
+  setToggleWatchlistHandler = (callback) => {
+    this._callback.toggleWatchlist = callback;
+    this.element.querySelector('.film-details__control-button--watchlist')
+      .addEventListener('click', () => {
+        this._callback.toggleWatchlist();
+      });
+  };
+
+  setToggleAlreadyWatchedHandler = (callback) => {
+    this._callback.toggleWatched = callback;
+    this.element.querySelector('.film-details__control-button--watched')
+      .addEventListener('click', () => {
+        this._callback.toggleWatched();
+      });
+  };
+
+  setToggleFavoritesHandler = (callback) => {
+    this._callback.toggleFavorites = callback;
+    this.element.querySelector('.film-details__control-button--favorite')
+      .addEventListener('click', () => {
+        this._callback.toggleFavorites ();
+      });
+  };
 }

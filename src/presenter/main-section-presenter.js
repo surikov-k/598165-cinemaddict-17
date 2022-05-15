@@ -6,28 +6,32 @@ import {remove, render, RenderPosition} from '../framework/render';
 export default class MainSectionPresenter {
   #cardListPresenter = null;
   #cards = null;
-  #detailsPresenter = null;
+  #comments = null;
   #listContainer = null;
   #moreButtonView = null;
   #renderedCards = CARDS_PER_CLICK;
+  #boardPresenters = null;
 
-  constructor(cards, detailsPresenter) {
+  constructor(cards, comments, boardPresenters) {
     this.#cards = cards;
-    this.#detailsPresenter = detailsPresenter;
+    this.#comments = comments;
+    this.#boardPresenters = boardPresenters;
   }
 
   init(container) {
     if (!this.#cards.length) {
       return;
     }
+
     this.#listContainer = container.element
       .querySelector('.films-list__container');
 
-    this.#cardListPresenter = new CardListPresenter(
-      this.#listContainer,
-      this.#detailsPresenter
+    this.#cardListPresenter = new CardListPresenter(this.#listContainer, this.#boardPresenters);
+
+    this.#cardListPresenter.addCards(
+      this.#cards.slice(0, this.#renderedCards),
+      this.#comments
     );
-    this.#cardListPresenter.addCards(this.#cards.slice(0, this.#renderedCards));
 
     if (this.#renderedCards <= this.#cards.length) {
       this.#moreButtonView = new MoreButtonView();
@@ -36,13 +40,23 @@ export default class MainSectionPresenter {
 
     this.#moreButtonView.setClickHandler(() => {
       this.#cardListPresenter
-        .addCards(this.#cards.slice(this.#renderedCards, this.#renderedCards + CARDS_PER_CLICK));
+        .addCards(
+          this.#cards.slice(this.#renderedCards, this.#renderedCards + CARDS_PER_CLICK), this.#comments
+        );
 
       if (this.#renderedCards + CARDS_PER_CLICK >= this.#cards.length) {
         remove(this.#moreButtonView);
       }
+
       this.#renderedCards += CARDS_PER_CLICK;
     });
   }
+
+  #clearSection() {
+    this.#cardListPresenter.clearList();
+    this.#renderedCards = CARDS_PER_CLICK;
+    remove(this.#moreButtonView);
+  }
+
 }
 

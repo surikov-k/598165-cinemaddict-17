@@ -2,7 +2,7 @@ import {CARDS_COUNT, COMMENTS_COUNT} from './const';
 import CardsModel from './model/cards-model';
 import CommentsModel from './model/comments-model';
 import FilterView from './view/filter-view';
-import MainBoardPresenter from './presenter/main-board-presenter';
+import BoardPresenter from './presenter/board-presenter';
 import MainBoardView from './view/main-board-view';
 import ProfileView from './view/profile-view';
 import SortView from './view/sort-view';
@@ -25,7 +25,7 @@ render(new SortView(), siteMainElement);
 const mainBoardView = new MainBoardView();
 render(mainBoardView, siteMainElement);
 
-const mainBoardPresenter = new MainBoardPresenter(
+const mainBoardPresenter = new BoardPresenter(
   new CardsModel(cards),
   new CommentsModel(comments)
 );

@@ -2,13 +2,15 @@ import CardListPresenter from './card-list-presenter';
 import {render} from '../framework/render';
 
 export default class ExtraSectionPresenter {
+  #boardPresenters = null;
   #cards = null;
-  #detailsPresenter = null;
+  #comments = null;
   #listContainer = null;
 
-  constructor(cards, detailsPresenter) {
+  constructor(cards, comments, boardPresenters) {
     this.#cards = cards;
-    this.#detailsPresenter = detailsPresenter;
+    this.#comments = comments;
+    this.#boardPresenters = boardPresenters;
   }
 
   init(container, extraSection) {
@@ -20,8 +22,8 @@ export default class ExtraSectionPresenter {
     this.#listContainer = extraSection.element
       .querySelector('.films-list__container');
 
-    new CardListPresenter(this.#listContainer, this.#detailsPresenter)
-      .addCards(this.#cards);
+    new CardListPresenter(this.#listContainer, this.#boardPresenters)
+      .addCards(this.#cards, this.#comments);
   }
 }
 

@@ -57,7 +57,7 @@ const createTemplate = (card) => {
 `;
 };
 
-export default class CardView extends AbstractView{
+export default class CardView extends AbstractView {
   #card = null;
 
   constructor(card) {
@@ -78,5 +78,29 @@ export default class CardView extends AbstractView{
   #openDetailsHandler = (evt) => {
     evt.preventDefault();
     this._callback.openDetails();
+  };
+
+  setToggleWatchlistHandler = (callback) => {
+    this._callback.toggleWatchlist = callback;
+    this.element.querySelector('.film-card__controls-item--add-to-watchlist')
+      .addEventListener('click', () => {
+        this._callback.toggleWatchlist();
+      });
+  };
+
+  setToggleAlreadyWatchedHandler = (callback) => {
+    this._callback.toggleWatched = callback;
+    this.element.querySelector('.film-card__controls-item--mark-as-watched')
+      .addEventListener('click', () => {
+        this._callback.toggleWatched();
+      });
+  };
+
+  setToggleFavoritesHandler = (callback) => {
+    this._callback.toggleFavorites = callback;
+    this.element.querySelector('.film-card__controls-item--favorite')
+      .addEventListener('click', () => {
+        this._callback.toggleFavorites();
+      });
   };
 }
