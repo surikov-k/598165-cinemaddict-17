@@ -5,7 +5,6 @@ import FilterView from './view/filter-view';
 import BoardPresenter from './presenter/board-presenter';
 import MainBoardView from './view/main-board-view';
 import ProfileView from './view/profile-view';
-import SortView from './view/sort-view';
 import {generateCard} from './mock/card';
 import {generateComment} from './mock/comment';
 import {generateFilter} from './mock/filter';
@@ -20,7 +19,6 @@ const header = document.querySelector('.header');
 
 render(new ProfileView(), header);
 render(new FilterView(filter), siteMainElement);
-render(new SortView(), siteMainElement);
 
 const mainBoardView = new MainBoardView();
 render(mainBoardView, siteMainElement);

@@ -1,8 +1,8 @@
 import ExtraCardsSectionView from '../view/extra-cards-section-view';
-import ExtraSectionPresenter from './extra-section-presenter';
 import MainCardsSectionView from '../view/main-cards-section-view';
-import MainSectionPresenter from './main-section-presenter';
-import MainBoardHeaderView from '../view/main-board-header-view';
+import SectionPresenter from './section-presenter';
+import SortView from '../view/sort-view';
+import SortingPresenter from './sorting-presenter';
 import {render, RenderPosition} from '../framework/render';
 
 export default class BoardPresenter {
@@ -10,7 +10,7 @@ export default class BoardPresenter {
   #commentsModel = null;
   #comments = null;
   #cards = null;
-  #boardPresenters = new Map();
+  #boardCardsPresenters = [];
 
   constructor(cardsModel, commentsModel) {
     this.#cardsModel = cardsModel;
@@ -21,26 +21,32 @@ export default class BoardPresenter {
     this.#cards = [...this.#cardsModel.cards];
     this.#comments = [...this.#commentsModel.comments];
 
-    const mainBoardHeaderView = new MainBoardHeaderView(this.#cards);
-    const cardsListView = new MainCardsSectionView();
+    const mainCardsSectionView = new MainCardsSectionView(this.#cards.length);
+    const topCardsSectionView = new ExtraCardsSectionView('Top rated');
+    const popularCardsSectionView = new ExtraCardsSectionView('Most commented');
 
-    render(cardsListView, container);
-    render(mainBoardHeaderView, cardsListView.element, RenderPosition.AFTERBEGIN);
+    const mainSectionPresenter = new SectionPresenter(
+      this.#cards,
+      this.#comments,
+      this.#boardCardsPresenters);
+    mainSectionPresenter.init(container, mainCardsSectionView);
 
-    new MainSectionPresenter(this.#cards, this.#comments, this.#boardPresenters)
-      .init(cardsListView);
+    const sortView = new SortView();
+    render(sortView, mainCardsSectionView.element, RenderPosition.AFTERBEGIN);
 
-    new ExtraSectionPresenter(
+    const sortingPresenter = new SortingPresenter(mainSectionPresenter);
+    sortView.setChangeTypeHandler(sortingPresenter.sort);
+
+    new SectionPresenter(
       this.#cardsModel.getTopRated(2),
       this.#comments,
-      this.#boardPresenters)
-      .init(container, new ExtraCardsSectionView('Top rated'));
+      this.#boardCardsPresenters)
+      .init(container, topCardsSectionView);
 
-    new ExtraSectionPresenter(
+    new SectionPresenter(
       this.#cardsModel.getMostCommented(2),
       this.#comments,
-      this.#boardPresenters)
-      .init(container, new ExtraCardsSectionView('Most commented'));
+      this.#boardCardsPresenters)
+      .init(container, popularCardsSectionView);
   }
-
 }

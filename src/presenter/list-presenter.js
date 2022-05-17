@@ -1,16 +1,16 @@
 import {CardPresenter} from './card-presenter';
-import {updateItem} from '../utils/common';
 
-export default class CardListPresenter {
+export default class ListPresenter {
   #container = null;
   #cards = null;
   #comments = null;
-  #listPresenters = new Map();
-  #boardPresenters = null;
+  #listCardsPresenters = new Map();
+  #boardCardsPresenters = null;
+  #updateItem = () => {};
 
-  constructor(container, boardPresenters) {
+  constructor(container, boardCardsPresenters) {
     this.#container = container;
-    this.#boardPresenters =boardPresenters;
+    this.#boardCardsPresenters = boardCardsPresenters;
   }
 
   addCards(cards, comments) {
@@ -25,14 +25,14 @@ export default class CardListPresenter {
           this.#handleCloseDetails);
         cardPresenter.add(card, this.#getCardComments(card));
 
-        this.#listPresenters.set(card.id, cardPresenter);
-        this.#boardPresenters.set(card.id, cardPresenter);
+        this.#listCardsPresenters.set(card.id, cardPresenter);
+        this.#boardCardsPresenters.push(cardPresenter);
       });
   }
 
   clearList() {
-    this.#listPresenters.forEach((presenter) => presenter.destroy());
-    this.#listPresenters.clear();
+    this.#listCardsPresenters.forEach((presenter) => presenter.destroy());
+    this.#listCardsPresenters.clear();
   }
 
   #getCardComments(card) {
@@ -44,16 +44,24 @@ export default class CardListPresenter {
   }
 
   #handleCardChange = (updatedCard) => {
-    this.#cards = updateItem(this.#cards, updatedCard);
-    this.#listPresenters.get(updatedCard.id).add(updatedCard, this.#getCardComments(updatedCard));
+    this.#updateItem(updatedCard);
+    this.#boardCardsPresenters.forEach((cardPresenter) => {
+      if (cardPresenter.id === updatedCard.id) {
+        cardPresenter.add(updatedCard, this.#getCardComments(updatedCard));
+      }
+    });
   };
 
   #handleCloseDetails = () => {
-    for (const presenter of this.#boardPresenters.values()) {
+    for (const presenter of this.#boardCardsPresenters.values()) {
       if (presenter.hasDetailsViewOpened()) {
         presenter.closeDetails();
         return;
       }
     }
+  };
+
+  setUpdateItem = (callback) => {
+    this.#updateItem = callback;
   };
 }

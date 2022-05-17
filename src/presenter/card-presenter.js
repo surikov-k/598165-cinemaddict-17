@@ -22,6 +22,10 @@ export class CardPresenter {
     this.#changeData = changeData;
   }
 
+  get id() {
+    return this.#card.id;
+  }
+
   add(card, comments) {
     this.#card = card;
     this.#comments = comments;

@@ -10,9 +10,16 @@ const FilterType = {
   FAVORITES: 'Favorites',
 };
 
+const SortType = {
+  DEFAULT: 'default',
+  DATE: 'date',
+  RATING: 'rating',
+};
+
 export {
   CARDS_COUNT,
   CARDS_PER_CLICK,
   COMMENTS_COUNT,
   FilterType,
+  SortType,
 };
