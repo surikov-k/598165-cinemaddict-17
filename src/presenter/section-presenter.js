@@ -42,7 +42,7 @@ export default class SectionPresenter {
     this.renderList();
   }
 
-  renderList = () => {
+  renderList() {
     this.#cardListPresenter
       .addCards(
         this.#cards.slice(0, this.#renderedCards),
@@ -67,7 +67,7 @@ export default class SectionPresenter {
 
       this.#renderedCards += CARDS_PER_CLICK;
     });
-  };
+  }
 
   clearSection() {
     this.#cardListPresenter.clearList();

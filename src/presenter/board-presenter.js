@@ -31,11 +31,17 @@ export default class BoardPresenter {
       this.#boardCardsPresenters);
     mainSectionPresenter.init(container, mainCardsSectionView);
 
-    const sortView = new SortView();
-    render(sortView, mainCardsSectionView.element, RenderPosition.AFTERBEGIN);
-
-    const sortingPresenter = new SortingPresenter(mainSectionPresenter);
-    sortView.setChangeTypeHandler(sortingPresenter.sort);
+    const sortingPresenter = new SortingPresenter(
+      this.#cards,
+      mainSectionPresenter.initialOrderCards
+    );
+    sortingPresenter.init(
+      mainCardsSectionView.element,
+      () => {
+        mainSectionPresenter.clearSection();
+        mainSectionPresenter.renderList();
+      }
+    );
 
     new SectionPresenter(
       this.#cardsModel.getTopRated(2),

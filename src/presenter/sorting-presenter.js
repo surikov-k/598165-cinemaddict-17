@@ -1,31 +1,23 @@
-import {SortType} from '../const';
-import dayjs from 'dayjs';
+import SortView from '../view/sort-view';
+import {render, RenderPosition} from '../framework/render';
+import {sort} from '../utils/sort';
 
 export default class SortingPresenter {
-  #sectionPresenter = null;
+  #cards;
+  #initialOrderCards;
 
-  constructor(sectionPresenter) {
-    this.#sectionPresenter = sectionPresenter;
+  constructor(cards, initialOrderCards) {
+    this.#cards = cards;
+    this.#initialOrderCards = initialOrderCards;
   }
 
+  init(container, updateListCallback) {
+    const sortView = new SortView();
+    render(sortView, container, RenderPosition.AFTERBEGIN);
 
-  sort = (type) => {
-    this.#sectionPresenter.clearSection();
-
-    switch (type) {
-      case SortType.DEFAULT:
-        this.#sectionPresenter.cards = [...this.#sectionPresenter.initialOrderCards];
-        break;
-      case SortType.RATING:
-        this.#sectionPresenter.cards
-          .sort((firstCard, secondCard) => secondCard.filmInfo.totalRating - firstCard.filmInfo.totalRating);
-        break;
-      case SortType.DATE:
-        this.#sectionPresenter.cards
-          .sort((firstCard, secondCard) => dayjs(firstCard.filmInfo.release.date)
-            .diff(dayjs(secondCard.filmInfo.release.date)));
-        break;
-    }
-    this.#sectionPresenter.renderList();
-  };
+    sortView.setChangeTypeHandler((type) => {
+      sort[type](this.#cards, this.#initialOrderCards);
+      updateListCallback();
+    });
+  }
 }

@@ -28,9 +28,12 @@ export default class ListPresenter {
         this.#listCardsPresenters.set(card.id, cardPresenter);
         this.#boardCardsPresenters.push(cardPresenter);
       });
+
   }
 
   clearList() {
+    this.#handleCloseDetails();
+    this.#clearBoardCardsPresenters();
     this.#listCardsPresenters.forEach((presenter) => presenter.destroy());
     this.#listCardsPresenters.clear();
   }
@@ -53,7 +56,7 @@ export default class ListPresenter {
   };
 
   #handleCloseDetails = () => {
-    for (const presenter of this.#boardCardsPresenters.values()) {
+    for (const presenter of this.#boardCardsPresenters) {
       if (presenter.hasDetailsViewOpened()) {
         presenter.closeDetails();
         return;
@@ -61,7 +64,17 @@ export default class ListPresenter {
     }
   };
 
-  setUpdateItem = (callback) => {
+  setUpdateItem(callback) {
     this.#updateItem = callback;
-  };
+  }
+
+  #clearBoardCardsPresenters() {
+    const cardsPresenters = this.#boardCardsPresenters
+      .filter((boardCardPresenter) => ![...this.#listCardsPresenters.
+        values()].includes(boardCardPresenter));
+
+    this.#boardCardsPresenters.length = 0;
+    cardsPresenters.forEach((cardPresenter) => this.#boardCardsPresenters
+      .push(cardPresenter));
+  }
 }
