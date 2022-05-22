@@ -6,11 +6,12 @@ export default class ListPresenter {
   #comments = null;
   #listCardsPresenters = new Map();
   #boardCardsPresenters = null;
-  #updateItem = () => {};
+  #handleCardChange = null;
 
-  constructor(container, boardCardsPresenters) {
+  constructor(container, boardCardsPresenters, handleCardChange) {
     this.#container = container;
     this.#boardCardsPresenters = boardCardsPresenters;
+    this.#handleCardChange = handleCardChange;
   }
 
   addCards(cards, comments) {
@@ -21,9 +22,12 @@ export default class ListPresenter {
 
         const cardPresenter = new CardPresenter(
           this.#container,
+          card,
+          this.#comments,
           this.#handleCardChange,
           this.#handleCloseDetails);
-        cardPresenter.add(card, this.#getCardComments(card));
+
+        cardPresenter.add(card);
 
         this.#listCardsPresenters.set(card.id, cardPresenter);
         this.#boardCardsPresenters.push(cardPresenter);
@@ -33,27 +37,10 @@ export default class ListPresenter {
 
   clearList() {
     this.#handleCloseDetails();
-    this.#clearBoardCardsPresenters();
+    this.#removeFromBoardCardsPresenters();
     this.#listCardsPresenters.forEach((presenter) => presenter.destroy());
     this.#listCardsPresenters.clear();
   }
-
-  #getCardComments(card) {
-    const comments = [];
-    card.comments.forEach((commentId) => {
-      comments.push(this.#comments.find((comment) => comment.id === commentId));
-    });
-    return comments;
-  }
-
-  #handleCardChange = (updatedCard) => {
-    this.#updateItem(updatedCard);
-    this.#boardCardsPresenters.forEach((cardPresenter) => {
-      if (cardPresenter.id === updatedCard.id) {
-        cardPresenter.add(updatedCard, this.#getCardComments(updatedCard));
-      }
-    });
-  };
 
   #handleCloseDetails = () => {
     for (const presenter of this.#boardCardsPresenters) {
@@ -64,17 +51,12 @@ export default class ListPresenter {
     }
   };
 
-  setUpdateItem(callback) {
-    this.#updateItem = callback;
-  }
-
-  #clearBoardCardsPresenters() {
-    const cardsPresenters = this.#boardCardsPresenters
-      .filter((boardCardPresenter) => ![...this.#listCardsPresenters.
-        values()].includes(boardCardPresenter));
+  #removeFromBoardCardsPresenters() {
+    const keepBoardCardsPresenters = this.#boardCardsPresenters
+      .filter((presenter) => ![...this.#listCardsPresenters.values()]
+        .includes(presenter));
 
     this.#boardCardsPresenters.length = 0;
-    cardsPresenters.forEach((cardPresenter) => this.#boardCardsPresenters
-      .push(cardPresenter));
+    this.#boardCardsPresenters.push(...keepBoardCardsPresenters);
   }
 }

@@ -16,8 +16,8 @@ export default class SortingPresenter {
     render(sortView, container, RenderPosition.AFTERBEGIN);
 
     sortView.setChangeTypeHandler((type) => {
-      sort[type](this.#cards, this.#initialOrderCards);
-      updateListCallback();
+      const sorted = sort[type](this.#cards, this.#initialOrderCards);
+      updateListCallback(sorted);
     });
   }
 }

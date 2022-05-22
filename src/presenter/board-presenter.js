@@ -1,15 +1,15 @@
 import ExtraCardsSectionView from '../view/extra-cards-section-view';
 import MainCardsSectionView from '../view/main-cards-section-view';
 import SectionPresenter from './section-presenter';
-import SortView from '../view/sort-view';
 import SortingPresenter from './sorting-presenter';
-import {render, RenderPosition} from '../framework/render';
+import {updateItem} from '../utils/common';
 
 export default class BoardPresenter {
   #cardsModel = null;
   #commentsModel = null;
   #comments = null;
   #cards = null;
+  #initialOrderCards = null;
   #boardCardsPresenters = [];
 
   constructor(cardsModel, commentsModel) {
@@ -19,6 +19,7 @@ export default class BoardPresenter {
 
   init(container) {
     this.#cards = [...this.#cardsModel.cards];
+    this.#initialOrderCards = [...this.#cards];
     this.#comments = [...this.#commentsModel.comments];
 
     const mainCardsSectionView = new MainCardsSectionView(this.#cards.length);
@@ -28,7 +29,8 @@ export default class BoardPresenter {
     const mainSectionPresenter = new SectionPresenter(
       this.#cards,
       this.#comments,
-      this.#boardCardsPresenters);
+      this.#boardCardsPresenters,
+      this.#handleCardChange);
     mainSectionPresenter.init(container, mainCardsSectionView);
 
     const sortingPresenter = new SortingPresenter(
@@ -37,8 +39,9 @@ export default class BoardPresenter {
     );
     sortingPresenter.init(
       mainCardsSectionView.element,
-      () => {
+      (tasks) => {
         mainSectionPresenter.clearSection();
+        mainSectionPresenter.updateCards(tasks);
         mainSectionPresenter.renderList();
       }
     );
@@ -46,13 +49,27 @@ export default class BoardPresenter {
     new SectionPresenter(
       this.#cardsModel.getTopRated(2),
       this.#comments,
-      this.#boardCardsPresenters)
+      this.#boardCardsPresenters,
+      this.#handleCardChange)
       .init(container, topCardsSectionView);
 
     new SectionPresenter(
       this.#cardsModel.getMostCommented(2),
       this.#comments,
-      this.#boardCardsPresenters)
+      this.#boardCardsPresenters,
+      this.#handleCardChange)
       .init(container, popularCardsSectionView);
   }
+
+  #handleCardChange = (updatedCard) => {
+    this.#cards = updateItem(this.#cards, updatedCard);
+    this.#initialOrderCards = updateItem(this.#cards, updatedCard);
+
+    this.#boardCardsPresenters.forEach((cardPresenter) => {
+      if (cardPresenter.id === updatedCard.id) {
+        cardPresenter.add(updatedCard);
+      }
+    });
+  };
+
 }

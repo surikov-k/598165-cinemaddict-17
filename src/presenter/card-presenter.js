@@ -14,10 +14,14 @@ export class CardPresenter {
 
   constructor(
     container,
+    card,
+    allComments,
     changeData,
     closeOpenedDetails
   ) {
     this.#container = container;
+    this.#card = card;
+    this.#comments = this.#getCardComments(allComments, this.#card);
     this.#closeOpenedDetails = closeOpenedDetails;
     this.#changeData = changeData;
   }
@@ -26,9 +30,8 @@ export class CardPresenter {
     return this.#card.id;
   }
 
-  add(card, comments) {
+  add(card) {
     this.#card = card;
-    this.#comments = comments;
     const prevCardView = this.#cardView;
     const prevDetailsView = this.#detailsView;
 
@@ -132,5 +135,13 @@ export class CardPresenter {
       }
     });
   };
+
+  #getCardComments(allComments, card) {
+    const comments = [];
+    card.comments.forEach((commentId) => {
+      comments.push(allComments.find((comment) => comment.id === commentId));
+    });
+    return comments;
+  }
 }
 
