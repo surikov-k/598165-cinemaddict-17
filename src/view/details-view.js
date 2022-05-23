@@ -1,7 +1,16 @@
-import AbstractView from '../framework/view/abstract-view';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import {formatDate, formatDuration, humanizeDate} from '../utils/datetime';
 
-const createTemplate = (card, comments) => {
+const Emoji = {
+  SMILE: 'smile',
+  SLEEPING: 'sleeping',
+  PUKE: 'puke',
+  ANGRY: 'angry',
+};
+
+const createTemplate = (state) => {
+  const {card, comments} = state;
+
   const {
     filmInfo: {
       actors,
@@ -24,6 +33,8 @@ const createTemplate = (card, comments) => {
     }
   } = card;
 
+  const {emoji: selectedEmoji} = state.newComment;
+
   const getGenresList = (genresList) => genresList
     .map((genre) => `<span class="film-details__genre">${genre}</span>`)
     .join('\n');
@@ -34,6 +45,22 @@ const createTemplate = (card, comments) => {
     }
     return '';
   };
+
+  const getEmojiList = () => (`
+    <div class="film-details__emoji-list">
+      ${Object.values(Emoji).map((emoji) => `
+        <input 
+          class="film-details__emoji-item visually-hidden" 
+          name="comment-emoji" 
+          type="radio" 
+          id="emoji-${emoji}" 
+          value="${emoji}"
+          ${emoji === selectedEmoji ? 'checked' : ''}>
+        <label class="film-details__emoji-label" for="emoji-${emoji}">
+          <img src="./images/emoji/${emoji}.png" width="30" height="30" alt="emoji">
+        </label>
+      `).join('\n')}
+  </div>`);
 
   const createComment = (comment) => {
     const {
@@ -141,34 +168,16 @@ const createTemplate = (card, comments) => {
           </ul>
   
           <div class="film-details__new-comment">
-            <div class="film-details__add-emoji-label"></div>
+            <div class="film-details__add-emoji-label">
+            ${selectedEmoji
+    ? `<img src="./images/emoji/${selectedEmoji}.png" alt="emoji-${selectedEmoji}" width="55" height="55">`
+    : ''}
+            </div>
   
             <label class="film-details__comment-label">
-              <textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment"></textarea>
+              <textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment">${state.newComment.text ? state.newComment.text : ''}</textarea>
             </label>
-  
-            <div class="film-details__emoji-list">
-              <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-smile" value="smile">
-              <label class="film-details__emoji-label" for="emoji-smile">
-                <img src="./images/emoji/smile.png" width="30" height="30" alt="emoji">
-              </label>
-  
-              <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-sleeping" value="sleeping">
-              <label class="film-details__emoji-label" for="emoji-sleeping">
-                <img src="./images/emoji/sleeping.png" width="30" height="30" alt="emoji">
-              </label>
-  
-              <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-puke" value="puke">
-              <label class="film-details__emoji-label" for="emoji-puke">
-                <img src="./images/emoji/puke.png" width="30" height="30" alt="emoji">
-              </label>
-  
-              <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-angry" value="angry">
-              <label class="film-details__emoji-label" for="emoji-angry">
-                <img src="./images/emoji/angry.png" width="30" height="30" alt="emoji">
-              </label>
-            </div>
-          </div>
+            ${getEmojiList()}
         </section>
       </div>
     </form>
@@ -176,24 +185,57 @@ const createTemplate = (card, comments) => {
 `;
 };
 
-export default class DetailsView extends AbstractView{
-  #card = null;
-  #comments = null;
+export default class DetailsView extends AbstractStatefulView {
 
   constructor(card, comments) {
     super();
-    this.#card = card;
-    this.#comments = comments;
+
+    this._state = {
+      card: {...card},
+      comments: [...comments],
+      newComment: {
+        emoji: null,
+        text: null,
+      },
+      scroll: null,
+    };
+    this.#setInnerHandlers();
   }
 
   get template() {
-    return createTemplate(this.#card, this.#comments);
+    return createTemplate(this._state);
   }
 
   setCloseHandler = (callback) => {
     this._callback.close = callback;
+
     this.element.querySelector('.film-details__close-btn')
       .addEventListener('click', this.#closeHandler);
+  };
+
+  setAddCommentHandler = (callback) => {
+    this._callback.addComment = callback;
+  };
+
+  #addCommentHandler = () => {
+    this.element.querySelector('.film-details__comment-input')
+      .addEventListener('keydown', (evt) => {
+        if (evt.key === 'Enter' && evt.metaKey) {
+          this._callback.addComment({
+            comment: this._state.newComment.text,
+            emotion: this._state.newComment.emoji,
+          });
+          this.updateElement(
+            {
+              ...this._state,
+              newComment: {
+                emoji: null,
+                text: null,
+              }
+            }
+          );
+        }
+      });
   };
 
   #closeHandler = (evt) => {
@@ -201,6 +243,14 @@ export default class DetailsView extends AbstractView{
     this.unlockScroll();
     this._callback.close();
   };
+
+  rerender(card, comments) {
+    this.updateElement({
+      ...this._state,
+      card: {...card},
+      comments: [...comments],
+    });
+  }
 
   lockScroll = () => {
     document.body.classList.add('hide-overflow');
@@ -233,7 +283,58 @@ export default class DetailsView extends AbstractView{
     this._callback.toggleFavorites = callback;
     this.element.querySelector('.film-details__control-button--favorite')
       .addEventListener('click', () => {
-        this._callback.toggleFavorites ();
+        this._callback.toggleFavorites();
       });
+  };
+
+  #setChooseEmoji() {
+    const emojiList = this.element
+      .querySelector('.film-details__emoji-list');
+
+    emojiList.addEventListener('change', (evt) => {
+      this.updateElement({
+        ...this._state,
+        newComment: {
+          ...this._state.newComment,
+          emoji: evt.target.value
+        }
+      });
+    });
+  }
+
+  #setChangeCommentText() {
+    this.element
+      .querySelector('.film-details__comment-input')
+      .addEventListener('input', (evt) => {
+        this._setState({newComment: {
+          ...this._state.newComment,
+          text: evt.target.value
+        }});
+      });
+  }
+
+  #saveScrollPositionHandler = (evt) => {
+    this._setState({scroll: evt.target.scrollTop});
+  };
+
+  #setSaveScrollPosition() {
+    this.element.addEventListener('scroll', this.#saveScrollPositionHandler);
+  }
+
+  #setInnerHandlers() {
+    this.#setChooseEmoji();
+    this.#setChangeCommentText();
+    this.#setSaveScrollPosition();
+    this.#addCommentHandler();
+  }
+
+  _restoreHandlers = () => {
+    this.element.scrollTop = this._state.scroll;
+    this.#setInnerHandlers();
+
+    this.setCloseHandler(this._callback.close);
+    this.setToggleWatchlistHandler(this._callback.toggleWatchlist);
+    this.setToggleAlreadyWatchedHandler(this._callback.toggleWatched);
+    this.setToggleFavoritesHandler(this._callback.toggleFavorites);
   };
 }

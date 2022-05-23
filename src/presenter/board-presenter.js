@@ -2,7 +2,12 @@ import ExtraCardsSectionView from '../view/extra-cards-section-view';
 import MainCardsSectionView from '../view/main-cards-section-view';
 import SectionPresenter from './section-presenter';
 import SortingPresenter from './sorting-presenter';
-import {updateItem} from '../utils/common';
+import {getRandomElementFrom, updateItem} from '../utils/common';
+
+import {FIRST_NAMES, LAST_NAMES} from '../mock/comment-data';
+import {id} from '../mock/comment';
+
+const user = `${getRandomElementFrom(FIRST_NAMES)} ${getRandomElementFrom(LAST_NAMES)}`;
 
 export default class BoardPresenter {
   #cardsModel = null;
@@ -30,7 +35,8 @@ export default class BoardPresenter {
       this.#cards,
       this.#comments,
       this.#boardCardsPresenters,
-      this.#handleCardChange);
+      this.#handleCardChange,
+      this.#handleAddComment);
     mainSectionPresenter.init(container, mainCardsSectionView);
 
     const sortingPresenter = new SortingPresenter(
@@ -50,14 +56,16 @@ export default class BoardPresenter {
       this.#cardsModel.getTopRated(2),
       this.#comments,
       this.#boardCardsPresenters,
-      this.#handleCardChange)
+      this.#handleCardChange,
+      this.#handleAddComment)
       .init(container, topCardsSectionView);
 
     new SectionPresenter(
       this.#cardsModel.getMostCommented(2),
       this.#comments,
       this.#boardCardsPresenters,
-      this.#handleCardChange)
+      this.#handleCardChange,
+      this.#handleAddComment)
       .init(container, popularCardsSectionView);
   }
 
@@ -72,4 +80,16 @@ export default class BoardPresenter {
     });
   };
 
+  #handleAddComment = (newComment) => {
+    const newCommentId = id.next().value.toString();
+
+    this.#comments.push({
+      ...newComment,
+      id: newCommentId,
+      author: user,
+      date: new Date(),
+    });
+
+    return newCommentId;
+  };
 }

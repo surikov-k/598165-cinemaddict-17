@@ -7,11 +7,13 @@ export default class ListPresenter {
   #listCardsPresenters = new Map();
   #boardCardsPresenters = null;
   #handleCardChange = null;
+  #handleAddComment = () => {};
 
-  constructor(container, boardCardsPresenters, handleCardChange) {
+  constructor(container, boardCardsPresenters, handleCardChange, handleAddComment) {
     this.#container = container;
     this.#boardCardsPresenters = boardCardsPresenters;
     this.#handleCardChange = handleCardChange;
+    this.#handleAddComment = handleAddComment;
   }
 
   addCards(cards, comments) {
@@ -25,7 +27,8 @@ export default class ListPresenter {
           card,
           this.#comments,
           this.#handleCardChange,
-          this.#handleCloseDetails);
+          this.#handleCloseDetails,
+          this.#handleAddComment);
 
         cardPresenter.add(card);
 

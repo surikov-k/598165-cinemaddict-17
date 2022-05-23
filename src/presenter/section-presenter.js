@@ -14,13 +14,15 @@ export default class SectionPresenter {
   #renderedCards = CARDS_PER_CLICK;
   #initialOrderCards = null;
   #handleCardChange = null;
+  #handleAddComment = null;
 
-  constructor(cards, comments, boardCardsPresenters, handleCardChange) {
+  constructor(cards, comments, boardCardsPresenters, handleCardChange, handleAddComment) {
     this.#cards = cards;
     this.#comments = comments;
     this.#boardCardsPresenters = boardCardsPresenters;
     this.#initialOrderCards = [...cards];
     this.#handleCardChange = handleCardChange;
+    this.#handleAddComment = handleAddComment;
   }
 
   init(container, view) {
@@ -37,6 +39,7 @@ export default class SectionPresenter {
       this.#listContainer,
       this.#boardCardsPresenters,
       this.#handleCardChange,
+      this.#handleAddComment,
     );
 
     this.renderList();
