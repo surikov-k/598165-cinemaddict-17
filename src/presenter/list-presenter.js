@@ -6,11 +6,14 @@ export default class ListPresenter {
   #comments = null;
   #listCardsPresenters = new Map();
   #boardCardsPresenters = null;
-  #updateItem = () => {};
+  #handleCardChange = null;
+  #handleAddComment = () => {};
 
-  constructor(container, boardCardsPresenters) {
+  constructor(container, boardCardsPresenters, handleCardChange, handleAddComment) {
     this.#container = container;
     this.#boardCardsPresenters = boardCardsPresenters;
+    this.#handleCardChange = handleCardChange;
+    this.#handleAddComment = handleAddComment;
   }
 
   addCards(cards, comments) {
@@ -21,39 +24,29 @@ export default class ListPresenter {
 
         const cardPresenter = new CardPresenter(
           this.#container,
+          card,
+          this.#comments,
           this.#handleCardChange,
-          this.#handleCloseDetails);
-        cardPresenter.add(card, this.#getCardComments(card));
+          this.#handleCloseDetails,
+          this.#handleAddComment);
+
+        cardPresenter.add(card);
 
         this.#listCardsPresenters.set(card.id, cardPresenter);
         this.#boardCardsPresenters.push(cardPresenter);
       });
+
   }
 
   clearList() {
+    this.#handleCloseDetails();
+    this.#removeFromBoardCardsPresenters();
     this.#listCardsPresenters.forEach((presenter) => presenter.destroy());
     this.#listCardsPresenters.clear();
   }
 
-  #getCardComments(card) {
-    const comments = [];
-    card.comments.forEach((commentId) => {
-      comments.push(this.#comments.find((comment) => comment.id === commentId));
-    });
-    return comments;
-  }
-
-  #handleCardChange = (updatedCard) => {
-    this.#updateItem(updatedCard);
-    this.#boardCardsPresenters.forEach((cardPresenter) => {
-      if (cardPresenter.id === updatedCard.id) {
-        cardPresenter.add(updatedCard, this.#getCardComments(updatedCard));
-      }
-    });
-  };
-
   #handleCloseDetails = () => {
-    for (const presenter of this.#boardCardsPresenters.values()) {
+    for (const presenter of this.#boardCardsPresenters) {
       if (presenter.hasDetailsViewOpened()) {
         presenter.closeDetails();
         return;
@@ -61,7 +54,12 @@ export default class ListPresenter {
     }
   };
 
-  setUpdateItem = (callback) => {
-    this.#updateItem = callback;
-  };
+  #removeFromBoardCardsPresenters() {
+    const keepBoardCardsPresenters = this.#boardCardsPresenters
+      .filter((presenter) => ![...this.#listCardsPresenters.values()]
+        .includes(presenter));
+
+    this.#boardCardsPresenters.length = 0;
+    this.#boardCardsPresenters.push(...keepBoardCardsPresenters);
+  }
 }

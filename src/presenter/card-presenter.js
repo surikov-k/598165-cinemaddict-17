@@ -9,31 +9,41 @@ export class CardPresenter {
   #container = null;
   #detailsView = null;
   #detailsViewOpened = false;
+  #allComments = null;
   #closeOpenedDetails = () => {};
   #changeData = () => {};
+  #addComment = () => {};
 
   constructor(
     container,
+    card,
+    allComments,
     changeData,
-    closeOpenedDetails
+    closeOpenedDetails,
+    addComment
   ) {
     this.#container = container;
+    this.#card = card;
+    this.#allComments = allComments;
     this.#closeOpenedDetails = closeOpenedDetails;
     this.#changeData = changeData;
+    this.#addComment = addComment;
   }
 
   get id() {
     return this.#card.id;
   }
 
-  add(card, comments) {
+  add(card) {
     this.#card = card;
-    this.#comments = comments;
+    this.#comments = this.#getCardComments(this.#allComments, this.#card);
     const prevCardView = this.#cardView;
     const prevDetailsView = this.#detailsView;
 
     this.#cardView = new CardView(this.#card);
-    this.#detailsView = new DetailsView(this.#card, this.#comments);
+    if (!this.#detailsViewOpened) {
+      this.#detailsView = new DetailsView(this.#card, this.#comments);
+    }
 
     this.#cardView.setOpenDetailsHandler(() => {
       this.#openDetails();
@@ -50,16 +60,10 @@ export class CardPresenter {
     if (this.#container.contains(prevCardView.element)) {
       replace(this.#cardView, prevCardView);
     }
-
-    if (this.#container.contains(prevDetailsView.element)) {
-      replace(this.#detailsView, prevDetailsView);
-    }
-
     remove(prevCardView);
-    remove(prevDetailsView);
 
     if (this.#detailsViewOpened) {
-      this.#openDetails();
+      this.#detailsView.rerender(this.#card, this.#comments);
     }
   }
 
@@ -73,6 +77,7 @@ export class CardPresenter {
     this.#detailsView.unlockScroll();
     window.removeEventListener('keydown', this.#onEscKeydown);
     remove(this.#detailsView);
+    this.#detailsView = new DetailsView(this.#card, this.#comments);
   };
 
   hasDetailsViewOpened = () => this.#detailsViewOpened;
@@ -81,13 +86,14 @@ export class CardPresenter {
     this.#closeOpenedDetails();
 
     this.#detailsViewOpened = true;
-    this.#detailsView = new DetailsView(this.#card, this.#comments);
     this.#detailsView.lockScroll();
     this.#detailsView.setCloseHandler(this.closeDetails);
 
     this.#detailsView.setToggleWatchlistHandler(this.#handleAddToWatchlistClick);
     this.#detailsView.setToggleAlreadyWatchedHandler(this.#handleMarkAsWatchedClick);
     this.#detailsView.setToggleFavoritesHandler(this.#handleAddToFavoritesClick);
+
+    this.#detailsView.setAddCommentHandler(this.#handleSubmitComment);
 
     window.addEventListener('keydown', this.#onEscKeydown);
 
@@ -132,5 +138,21 @@ export class CardPresenter {
       }
     });
   };
+
+  #handleSubmitComment = (comment) => {
+    const commentId = this.#addComment(comment);
+    this.#changeData({
+      ...this.#card,
+      comments: [...this.#card.comments, commentId]
+    });
+  };
+
+  #getCardComments(allComments, card) {
+    const comments = [];
+    card.comments.forEach((commentId) => {
+      comments.push(allComments.find((comment) => comment.id === commentId));
+    });
+    return comments;
+  }
 }
 
