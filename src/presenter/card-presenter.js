@@ -8,9 +8,10 @@ export class CardPresenter {
   #comments = null;
   #container = null;
   #detailsView = null;
-  #detailsViewOpened = false;
+  #isDetailsViewOpened = false;
   #allComments = null;
-  #closeOpenedDetails = () => {};
+  #boardState = null;
+
   #changeData = () => {};
   #addComment = () => {};
 
@@ -19,15 +20,15 @@ export class CardPresenter {
     card,
     allComments,
     changeData,
-    closeOpenedDetails,
-    addComment
+    addComment,
+    boardState
   ) {
     this.#container = container;
     this.#card = card;
     this.#allComments = allComments;
-    this.#closeOpenedDetails = closeOpenedDetails;
     this.#changeData = changeData;
     this.#addComment = addComment;
+    this.#boardState = boardState;
   }
 
   get id() {
@@ -41,7 +42,7 @@ export class CardPresenter {
     const prevDetailsView = this.#detailsView;
 
     this.#cardView = new CardView(this.#card);
-    if (!this.#detailsViewOpened) {
+    if (!this.#isDetailsViewOpened) {
       this.#detailsView = new DetailsView(this.#card, this.#comments);
     }
 
@@ -60,32 +61,36 @@ export class CardPresenter {
     if (this.#container.contains(prevCardView.element)) {
       replace(this.#cardView, prevCardView);
     }
-    remove(prevCardView);
-
-    if (this.#detailsViewOpened) {
+    if (this.#isDetailsViewOpened) {
       this.#detailsView.rerender(this.#card, this.#comments);
     }
+    remove(prevCardView);
   }
 
   destroy() {
+    if (this.#isDetailsViewOpened ) {
+      this.closeDetails();
+    }
     remove(this.#cardView);
     remove(this.#detailsView);
   }
 
   closeDetails = () => {
-    this.#detailsViewOpened = false;
+    this.#isDetailsViewOpened = false;
     this.#detailsView.unlockScroll();
     window.removeEventListener('keydown', this.#onEscKeydown);
     remove(this.#detailsView);
-    this.#detailsView = new DetailsView(this.#card, this.#comments);
   };
 
-  hasDetailsViewOpened = () => this.#detailsViewOpened;
 
   #openDetails() {
-    this.#closeOpenedDetails();
+    if  (this.#boardState.openedCard) {
+      this.#boardState.openedCard.closeDetails();
+    }
 
-    this.#detailsViewOpened = true;
+    this.#isDetailsViewOpened = true;
+    this.#boardState.openedCard = this;
+
     this.#detailsView.lockScroll();
     this.#detailsView.setCloseHandler(this.closeDetails);
 
@@ -103,7 +108,7 @@ export class CardPresenter {
   #onEscKeydown = (evt) => {
     if (evt.key === 'Escape' && !this.#detailsView.isInputActive()) {
       evt.preventDefault();
-      this.#detailsViewOpened = false;
+      this.#isDetailsViewOpened = false;
       this.#detailsView.unlockScroll();
       this.closeDetails();
     }
