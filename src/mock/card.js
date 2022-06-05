@@ -38,10 +38,12 @@ const generateCard = () => {
     id: id.next().value.toString(),
     comments: Array
       .from({length: getRandomInt(1, 5)}, () => commentId.next().value.toString()),
+    // comments: [],
     filmInfo: {
       title: `${getRandomElementFrom(TITLE_BEGINNINGS)} ${getRandomElementFrom(TITLE_MIDDLES)} ${getRandomElementFrom(TITLE_ENDINGS)}`,
       alternativeTitle: `${getRandomElementFrom(TITLE_BEGINNINGS)} ${getRandomElementFrom(TITLE_MIDDLES)} ${getRandomElementFrom(TITLE_ENDINGS)}`,
       totalRating: getRandom(0, 9).toFixed(1),
+      // totalRating: 0,
       poster: `images/posters/${getRandomElementFrom(POSTERS)}`,
       ageRating: getRandomInt(0, 18),
       director: getRandomElementFrom(DIRECTORS),

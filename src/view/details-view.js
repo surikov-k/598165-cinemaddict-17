@@ -1,12 +1,7 @@
+import he from 'he';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
+import {Emoji, UserDetail} from '../const';
 import {formatDate, formatDuration, humanizeDate} from '../utils/datetime';
-
-const Emoji = {
-  SMILE: 'smile',
-  SLEEPING: 'sleeping',
-  PUKE: 'puke',
-  ANGRY: 'angry',
-};
 
 const createTemplate = (state) => {
   const {card, comments} = state;
@@ -57,13 +52,14 @@ const createTemplate = (state) => {
           value="${emoji}"
           ${emoji === selectedEmoji ? 'checked' : ''}>
         <label class="film-details__emoji-label" for="emoji-${emoji}">
-          <img src="./images/emoji/${emoji}.png" width="30" height="30" alt="emoji">
+         <img src="./images/emoji/${emoji}.png" width="30" height="30" alt="emoji">
         </label>
       `).join('\n')}
   </div>`);
 
   const createComment = (comment) => {
     const {
+      id,
       author,
       comment: text,
       date: commentDate,
@@ -73,14 +69,14 @@ const createTemplate = (state) => {
     return `
     <li class="film-details__comment">
       <span class="film-details__comment-emoji">
-        <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-${emotion}">
+      ${emotion === null ? '<div class="film-details__no-emoji-label"></div>' : `<img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-${emotion}">`}
       </span>
       <div>
-        <p class="film-details__comment-text">${text}</p>
+        <p class="film-details__comment-text">${he.encode(text)}</p>
         <p class="film-details__comment-info">
           <span class="film-details__comment-author">${author}</span>
           <span class="film-details__comment-day">${humanizeDate(commentDate)}</span>
-          <button class="film-details__comment-delete">Delete</button>
+          <button class="film-details__comment-delete" data-comment-id=${id}>Delete</button>
         </p>
       </div>
     </li>
@@ -191,8 +187,8 @@ export default class DetailsView extends AbstractStatefulView {
     super();
 
     this._state = {
-      card: {...card},
-      comments: [...comments],
+      card,
+      comments,
       newComment: {
         emoji: null,
         text: null,
@@ -213,21 +209,32 @@ export default class DetailsView extends AbstractStatefulView {
       .addEventListener('click', this.#closeHandler);
   };
 
-  setAddCommentHandler = (callback) => {
-    this._callback.addComment = callback;
-  };
+  setDeleteCommentHandler(callback) {
+    this._callback.deleteComment = callback;
+    const commentsList = this.element.querySelector('.film-details__comments-list');
+    commentsList.addEventListener('click',this.#deleteCommentHandler);
+  }
 
-  #addCommentHandler = () => {
+  setAddCommentHandler (callback) {
+    this._callback.addComment = callback;
+
     this.element.querySelector('.film-details__comment-input')
       .addEventListener('keydown', (evt) => {
-        if (evt.key === 'Enter' && evt.metaKey) {
-          this._callback.addComment({
-            comment: this._state.newComment.text,
-            emotion: this._state.newComment.emoji,
+        const newComment = this._state.newComment.text;
+        if (evt.key === 'Enter' && evt.metaKey && newComment) {
+
+          const updatedComments = this._callback.addComment({
+            card: this._state.card,
+            comment: {
+              comment: newComment,
+              emotion: this._state.newComment.emoji,
+            }
           });
+
           this.updateElement(
             {
               ...this._state,
+              comments: [...updatedComments],
               newComment: {
                 emoji: null,
                 text: null,
@@ -236,7 +243,7 @@ export default class DetailsView extends AbstractStatefulView {
           );
         }
       });
-  };
+  }
 
   #closeHandler = (evt) => {
     evt.preventDefault();
@@ -244,13 +251,29 @@ export default class DetailsView extends AbstractStatefulView {
     this._callback.close();
   };
 
-  rerender(card, comments) {
-    this.updateElement({
-      ...this._state,
-      card: {...card},
-      comments: [...comments],
-    });
-  }
+  #deleteCommentHandler = (evt) => {
+    if (!evt.target.classList.contains('film-details__comment-delete')) {
+      return;
+    }
+    evt.preventDefault();
+    const commentId = evt.target.dataset.commentId;
+    const updatedComments = this._callback.deleteComment({
+      card: this._state.card,
+      commentId
+    }
+    );
+
+    this.updateElement(
+      {
+        ...this._state,
+        comments: [...updatedComments],
+        newComment: {
+          emoji: null,
+          text: null,
+        }
+      }
+    );
+  };
 
   lockScroll = () => {
     document.body.classList.add('hide-overflow');
@@ -267,7 +290,8 @@ export default class DetailsView extends AbstractStatefulView {
     this._callback.toggleWatchlist = callback;
     this.element.querySelector('.film-details__control-button--watchlist')
       .addEventListener('click', () => {
-        this._callback.toggleWatchlist();
+        this.#toggleButton(UserDetail.WATCHLIST);
+        this._callback.toggleWatchlist(this._state.card);
       });
   };
 
@@ -275,7 +299,8 @@ export default class DetailsView extends AbstractStatefulView {
     this._callback.toggleWatched = callback;
     this.element.querySelector('.film-details__control-button--watched')
       .addEventListener('click', () => {
-        this._callback.toggleWatched();
+        this.#toggleButton(UserDetail.ALREADY_WATCHED);
+        this._callback.toggleWatched(this._state.card);
       });
   };
 
@@ -283,15 +308,31 @@ export default class DetailsView extends AbstractStatefulView {
     this._callback.toggleFavorites = callback;
     this.element.querySelector('.film-details__control-button--favorite')
       .addEventListener('click', () => {
-        this._callback.toggleFavorites();
+        this.#toggleButton(UserDetail.FAVORITE);
+        this._callback.toggleFavorites(this._state.card);
+
       });
   };
 
-  #setChooseEmoji() {
+  #toggleButton = (button) => {
+    this.updateElement({
+      ...this._state,
+      card: {
+        ...this._state.card,
+        userDetails: {
+          ...this._state.card.userDetails,
+          [button]: !this._state.card.userDetails[button]
+        }
+      }
+    });
+  };
+
+  #setChooseEmoji = () => {
     const emojiList = this.element
       .querySelector('.film-details__emoji-list');
 
     emojiList.addEventListener('change', (evt) => {
+
       this.updateElement({
         ...this._state,
         newComment: {
@@ -300,7 +341,7 @@ export default class DetailsView extends AbstractStatefulView {
         }
       });
     });
-  }
+  };
 
   #setChangeCommentText() {
     this.element
@@ -325,7 +366,8 @@ export default class DetailsView extends AbstractStatefulView {
     this.#setChooseEmoji();
     this.#setChangeCommentText();
     this.#setSaveScrollPosition();
-    this.#addCommentHandler();
+    this.setAddCommentHandler(this._callback.addComment);
+    this.setDeleteCommentHandler(this._callback.deleteComment);
   }
 
   _restoreHandlers = () => {

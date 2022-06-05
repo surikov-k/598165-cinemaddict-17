@@ -1,3 +1,5 @@
+import {FIRST_NAMES, LAST_NAMES} from '../mock/comment-data';
+
 const getRandomInt = (a, b) => {
   const min = Math.ceil(Math.min(a, b));
   const max = Math.floor(Math.max(a, b));
@@ -42,19 +44,8 @@ function* getUniqueRandomFromRange(range) {
   }
 }
 
-const updateItem = (items, update) => {
-  const index = items.findIndex((item) => item.id === update.id);
+const getUserName = () => `${getRandomElementFrom(FIRST_NAMES)} ${getRandomElementFrom(LAST_NAMES)}`;
 
-  if (index === -1) {
-    return items;
-  }
-
-  return [
-    ...items.slice(0, index),
-    update,
-    ...items.slice(index + 1)
-  ];
-};
 
 export {
   getRandom,
@@ -62,6 +53,6 @@ export {
   getRandomInt,
   getUniqueRandomFromArrayGenerator,
   getUniqueRandomFromRange,
+  getUserName,
   idGenerator,
-  updateItem,
 };

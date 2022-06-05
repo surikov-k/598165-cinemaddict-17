@@ -399,7 +399,7 @@ button {
   position: relative;
 }
 
-.films-list--extra:last-of-type::before {
+.films-list--extra:nth-of-type(3)::before {
   border-left: solid 1px var(--outline-color);
   bottom: 20px;
   content: '';
@@ -409,6 +409,7 @@ button {
   top: 20px;
   width: 0;
 }
+
 
 .films-list--extra .films-list__container {
   padding: var(--vertical-gap) 40px;
@@ -670,6 +671,10 @@ button {
   border: dashed 1px #979797;
   background-color: rgba(255, 255, 255, 0.1);
   margin-right: 14px;
+}
+.film-details__no-emoji-label {
+  width: 55px;
+  height: 55px;
 }
 .film-details__emoji-label {
   width: 40px;

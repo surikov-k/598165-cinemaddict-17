@@ -1,34 +1,19 @@
 import CardView from '../view/card-view';
-import DetailsView from '../view/details-view';
 import {remove, render, replace} from '../framework/render';
+import {UpdateType, UserAction, UserDetail} from '../const';
 
 export class CardPresenter {
   #card = null;
   #cardView = null;
-  #comments = null;
   #container = null;
-  #detailsView = null;
-  #isDetailsViewOpened = false;
-  #allComments = null;
-  #boardState = null;
-
   #changeData = () => {};
-  #addComment = () => {};
 
   constructor(
     container,
-    card,
-    allComments,
     changeData,
-    addComment,
-    boardState
   ) {
     this.#container = container;
-    this.#card = card;
-    this.#allComments = allComments;
     this.#changeData = changeData;
-    this.#addComment = addComment;
-    this.#boardState = boardState;
   }
 
   get id() {
@@ -37,127 +22,64 @@ export class CardPresenter {
 
   add(card) {
     this.#card = card;
-    this.#comments = this.#getCardComments(this.#allComments, this.#card);
     const prevCardView = this.#cardView;
-    const prevDetailsView = this.#detailsView;
 
     this.#cardView = new CardView(this.#card);
-    if (!this.#isDetailsViewOpened) {
-      this.#detailsView = new DetailsView(this.#card, this.#comments);
-    }
 
     this.#cardView.setOpenDetailsHandler(() => {
-      this.#openDetails();
+      this.#changeData(
+        UserAction.OPEN_DETAILS,
+        null,
+        this.#card
+      );
     });
     this.#cardView.setToggleWatchlistHandler(this.#handleAddToWatchlistClick);
     this.#cardView.setToggleAlreadyWatchedHandler(this.#handleMarkAsWatchedClick);
-    this.#cardView.setToggleFavoritesHandler(this.#handleAddToFavoritesClick);
+    this.#cardView.setToggleFavoritesHandler(this.#handleToggleFavoritesClick);
 
-    if (prevCardView === null || prevDetailsView === null) {
+    if (prevCardView === null) {
       render(this.#cardView, this.#container);
       return;
     }
 
-    if (this.#container.contains(prevCardView.element)) {
-      replace(this.#cardView, prevCardView);
-    }
-    if (this.#isDetailsViewOpened) {
-      this.#detailsView.rerender(this.#card, this.#comments);
-    }
+    replace(this.#cardView, prevCardView);
     remove(prevCardView);
   }
 
   destroy() {
-    if (this.#isDetailsViewOpened ) {
-      this.closeDetails();
-    }
     remove(this.#cardView);
-    remove(this.#detailsView);
   }
-
-  closeDetails = () => {
-    this.#isDetailsViewOpened = false;
-    this.#detailsView.unlockScroll();
-    window.removeEventListener('keydown', this.#onEscKeydown);
-    remove(this.#detailsView);
-  };
-
-
-  #openDetails() {
-    if  (this.#boardState.openedCard) {
-      this.#boardState.openedCard.closeDetails();
-    }
-
-    this.#isDetailsViewOpened = true;
-    this.#boardState.openedCard = this;
-
-    this.#detailsView.lockScroll();
-    this.#detailsView.setCloseHandler(this.closeDetails);
-
-    this.#detailsView.setToggleWatchlistHandler(this.#handleAddToWatchlistClick);
-    this.#detailsView.setToggleAlreadyWatchedHandler(this.#handleMarkAsWatchedClick);
-    this.#detailsView.setToggleFavoritesHandler(this.#handleAddToFavoritesClick);
-
-    this.#detailsView.setAddCommentHandler(this.#handleSubmitComment);
-
-    window.addEventListener('keydown', this.#onEscKeydown);
-
-    render(this.#detailsView, document.body);
-  }
-
-  #onEscKeydown = (evt) => {
-    if (evt.key === 'Escape' && !this.#detailsView.isInputActive()) {
-      evt.preventDefault();
-      this.#isDetailsViewOpened = false;
-      this.#detailsView.unlockScroll();
-      this.closeDetails();
-    }
-  };
 
   #handleAddToWatchlistClick = () => {
-    this.#changeData({
-      ...this.#card,
-      userDetails: {
-        ...this.#card.userDetails,
-        watchlist: !this.#card.userDetails.watchlist
-      }
-    });
+    this.#changeData(
+      UserAction.UPDATE_CARD,
+      UpdateType.MINOR,
+      {card: {...this.#updateUserDetails(UserDetail.WATCHLIST)}}
+    );
   };
 
   #handleMarkAsWatchedClick = () => {
-    this.#changeData({
-      ...this.#card,
-      userDetails: {
-        ...this.#card.userDetails,
-        alreadyWatched: !this.#card.userDetails.alreadyWatched
-      }
-    });
+    this.#changeData(
+      UserAction.UPDATE_CARD,
+      UpdateType.MINOR,
+      {card: this.#updateUserDetails(UserDetail.ALREADY_WATCHED)}
+    );
   };
 
-  #handleAddToFavoritesClick = () => {
-    this.#changeData({
-      ...this.#card,
-      userDetails: {
-        ...this.#card.userDetails,
-        favorite: !this.#card.userDetails.favorite
-      }
-    });
+  #handleToggleFavoritesClick = () => {
+    this.#changeData(
+      UserAction.UPDATE_CARD,
+      UpdateType.MINOR,
+      {card: this.#updateUserDetails(UserDetail.FAVORITE)}
+    );
   };
 
-  #handleSubmitComment = (comment) => {
-    const commentId = this.#addComment(comment);
-    this.#changeData({
-      ...this.#card,
-      comments: [...this.#card.comments, commentId]
-    });
-  };
-
-  #getCardComments(allComments, card) {
-    const comments = [];
-    card.comments.forEach((commentId) => {
-      comments.push(allComments.find((comment) => comment.id === commentId));
-    });
-    return comments;
-  }
+  #updateUserDetails = (detail) => ({
+    ...this.#card,
+    userDetails: {
+      ...this.#card.userDetails,
+      [detail]: !this.#card.userDetails[detail]
+    }
+  });
 }
 

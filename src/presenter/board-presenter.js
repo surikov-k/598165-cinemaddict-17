@@ -1,25 +1,22 @@
-import ExtraCardsSectionView from '../view/extra-cards-section-view';
-import MainCardsSectionView from '../view/main-cards-section-view';
-import SectionPresenter from './section-presenter';
-import SortView from '../view/sort-view';
+import DetailsPresenter from './details-presenter';
+import ExtraSectionPresenter from './extra-section-presenter';
+import FilterModel from '../model/filter-model';
+import FilterPresenter from './filter-presenter';
+import MainSectionPresenter from './main-section-presenter';
+import {UpdateType, UserAction} from '../const';
 
-import {FIRST_NAMES, LAST_NAMES} from '../mock/comment-data';
-import {getRandomElementFrom, updateItem} from '../utils/common';
-import {id} from '../mock/comment';
-import {render, RenderPosition} from '../framework/render';
-
-const user = `${getRandomElementFrom(FIRST_NAMES)} ${getRandomElementFrom(LAST_NAMES)}`;
+const TOP_SECTION_TITLE = 'Top rated';
+const POPULAR_SECTION_TITLE = 'Most commented';
 
 export default class BoardPresenter {
   #cardsModel = null;
   #commentsModel = null;
-  #comments = null;
-  #cards = null;
-  #initialOrderCards = null;
+
   #mainSectionPresenter = null;
   #topSectionPresenter = null;
   #popularSectionPresenter = null;
-  #state = {openedCard: null};
+
+  #filterModel = null;
 
   constructor(cardsModel, commentsModel) {
     this.#cardsModel = cardsModel;
@@ -27,66 +24,92 @@ export default class BoardPresenter {
   }
 
   init(container) {
-    this.#cards = [...this.#cardsModel.cards];
-    this.#initialOrderCards = [...this.#cards];
-    this.#comments = [...this.#commentsModel.comments];
+    this.#filterModel = new FilterModel();
+    const filterPresenter = new FilterPresenter(
+      document.querySelector('.main'),
+      this.#filterModel,
+      this.#cardsModel);
+    filterPresenter.init();
 
-    const mainCardsSectionView = new MainCardsSectionView(this.#cards.length);
-    const topCardsSectionView = new ExtraCardsSectionView('Top rated');
-    const popularCardsSectionView = new ExtraCardsSectionView('Most commented');
+    this.#cardsModel.addObserver(this.#handleModelEvent);
+    this.#commentsModel.addObserver(this.#handleModelEvent);
+    this.#filterModel.addObserver(this.#handleModelEvent);
 
-    this.#mainSectionPresenter = new SectionPresenter(
-      this.#cards,
-      this.#comments,
-      this.#handleCardChange,
-      this.#handleAddComment,
-      this.#state);
-    this.#mainSectionPresenter.init(container, mainCardsSectionView);
+    this.#mainSectionPresenter = new MainSectionPresenter(
+      this.#cardsModel,
+      this.#commentsModel,
+      this.#filterModel,
+      this.#handleViewAction
+    );
+    this.#mainSectionPresenter.init(container);
 
-    const sortView = new SortView();
-    render(sortView, mainCardsSectionView.element, RenderPosition.AFTERBEGIN);
+    this.#topSectionPresenter = new ExtraSectionPresenter(
+      container,
+      TOP_SECTION_TITLE,
+      this.#handleViewAction);
+    this.#topSectionPresenter
+      .init(this.#cardsModel.topRatedCards);
 
-    sortView.setChangeTypeHandler((type) => {
-      this.#mainSectionPresenter.sort(type);
-    });
+    this.#popularSectionPresenter = new ExtraSectionPresenter(
+      container,
+      POPULAR_SECTION_TITLE,
+      this.#handleViewAction
+    );
+    this.#popularSectionPresenter
+      .init(this.#cardsModel.popularCards);
 
-    this.#topSectionPresenter = new SectionPresenter(
-      this.#cardsModel.getTopRated(2),
-      this.#comments,
-      this.#handleCardChange,
-      this.#handleAddComment,
-      this.#state);
-    this.#topSectionPresenter.init(container, topCardsSectionView);
-
-    this.#popularSectionPresenter = new SectionPresenter(
-      this.#cardsModel.getMostCommented(2),
-      this.#comments,
-      this.#handleCardChange,
-      this.#handleAddComment,
-      this.#state);
-    this.#popularSectionPresenter.init(container, popularCardsSectionView);
+    this.details = new DetailsPresenter(
+      this.#cardsModel,
+      this.#commentsModel,
+      this.#handleViewAction
+    );
   }
 
-  #handleCardChange = (updatedCard) => {
-    this.#cards = updateItem(this.#cards, updatedCard);
-    this.#initialOrderCards = updateItem(this.#cards, updatedCard);
-
-    [this.#mainSectionPresenter,
-      this.#topSectionPresenter,
-      this.#popularSectionPresenter,]
-      .forEach((presenter) => presenter.updateCard(updatedCard));
+  #handleViewAction = (actionType, updateType, update) => {
+    switch (actionType) {
+      case UserAction.UPDATE_CARD:
+        this.#cardsModel.update(updateType, update);
+        break;
+      case UserAction.ADD_COMMENT:
+        this.#commentsModel.add(updateType, update);
+        break;
+      case UserAction.DELETE_COMMENT:
+        this.#commentsModel.delete(updateType, update);
+        break;
+      case UserAction.OPEN_DETAILS:
+        this.details.open(update);
+        break;
+    }
   };
 
-  #handleAddComment = (newComment) => {
-    const newCommentId = id.next().value.toString();
+  #handleModelEvent = (updateType, data) => {
+    const {card} = data;
+    switch (updateType) {
+      case UpdateType.PATCH:
+        this.#mainSectionPresenter.addCard(card);
+        this.#topSectionPresenter
+          .update(this.#cardsModel.topRatedCards);
+        this.#popularSectionPresenter
+          .update(this.#cardsModel.popularCards);
 
-    this.#comments.push({
-      ...newComment,
-      id: newCommentId,
-      author: user,
-      date: new Date(),
-    });
+        break;
+      case UpdateType.MINOR:
+        this.#mainSectionPresenter.clear();
+        this.#mainSectionPresenter.render();
 
-    return newCommentId;
+        this.#topSectionPresenter
+          .update(this.#cardsModel.topRatedCards);
+        this.#popularSectionPresenter
+          .update(this.#cardsModel.popularCards);
+
+        break;
+      case UpdateType.MAJOR:
+        this.#mainSectionPresenter.clear({
+          resetRenderedCardsCount: true,
+          resetSortType: true
+        });
+        this.#mainSectionPresenter.render();
+        break;
+    }
   };
 }
