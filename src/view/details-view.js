@@ -66,8 +66,7 @@ const createTemplate = (state) => {
       emotion,
     } = comment;
 
-    return `
-    <li class="film-details__comment">
+    return ` <li class="film-details__comment">
       <span class="film-details__comment-emoji">
       ${emotion === null ? '<div class="film-details__no-emoji-label"></div>' : `<img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-${emotion}">`}
       </span>
@@ -76,15 +75,14 @@ const createTemplate = (state) => {
         <p class="film-details__comment-info">
           <span class="film-details__comment-author">${author}</span>
           <span class="film-details__comment-day">${humanizeDate(commentDate)}</span>
-          <button class="film-details__comment-delete" data-comment-id=${id}>Delete</button>
+          <button class="film-details__comment-delete" data-comment-id="${id}">Delete</button>
         </p>
       </div>
-    </li>
-    `;
+    </li>`;
   };
 
   return `
-  <section class="film-details">
+   <section class="film-details">
     <form class="film-details__inner" action="" method="get">
       <div class="film-details__top-container">
         <div class="film-details__close">
@@ -177,8 +175,7 @@ const createTemplate = (state) => {
         </section>
       </div>
     </form>
-  </section>
-`;
+  </section>`;
 };
 
 export default class DetailsView extends AbstractStatefulView {
@@ -212,35 +209,32 @@ export default class DetailsView extends AbstractStatefulView {
   setDeleteCommentHandler(callback) {
     this._callback.deleteComment = callback;
     const commentsList = this.element.querySelector('.film-details__comments-list');
-    commentsList.addEventListener('click',this.#deleteCommentHandler);
+    commentsList.addEventListener('click', this.#deleteCommentHandler);
   }
 
-  setAddCommentHandler (callback) {
+  setAddCommentHandler(callback) {
     this._callback.addComment = callback;
 
     this.element.querySelector('.film-details__comment-input')
       .addEventListener('keydown', (evt) => {
-        const newComment = this._state.newComment.text;
-        if (evt.key === 'Enter' && evt.metaKey && newComment) {
+        const {
+          text: newComment,
+          emoji: newEmoji
+        } = this._state.newComment;
 
-          const updatedComments = this._callback.addComment({
+        if (evt.key === 'Enter' && evt.metaKey) {
+
+          if (!(newComment && newEmoji)) {
+            return;
+          }
+
+          this._callback.addComment({
             card: this._state.card,
             comment: {
               comment: newComment,
               emotion: this._state.newComment.emoji,
             }
           });
-
-          this.updateElement(
-            {
-              ...this._state,
-              comments: [...updatedComments],
-              newComment: {
-                emoji: null,
-                text: null,
-              }
-            }
-          );
         }
       });
   }
@@ -256,23 +250,11 @@ export default class DetailsView extends AbstractStatefulView {
       return;
     }
     evt.preventDefault();
-    const commentId = evt.target.dataset.commentId;
-    const updatedComments = this._callback.deleteComment({
+    const deletedCommentId = evt.target.dataset.commentId;
+    this._callback.deleteComment({
       card: this._state.card,
-      commentId
-    }
-    );
-
-    this.updateElement(
-      {
-        ...this._state,
-        comments: [...updatedComments],
-        newComment: {
-          emoji: null,
-          text: null,
-        }
-      }
-    );
+      commentId: deletedCommentId
+    });
   };
 
   lockScroll = () => {
@@ -347,10 +329,12 @@ export default class DetailsView extends AbstractStatefulView {
     this.element
       .querySelector('.film-details__comment-input')
       .addEventListener('input', (evt) => {
-        this._setState({newComment: {
-          ...this._state.newComment,
-          text: evt.target.value
-        }});
+        this._setState({
+          newComment: {
+            ...this._state.newComment,
+            text: evt.target.value
+          }
+        });
       });
   }
 
@@ -379,4 +363,38 @@ export default class DetailsView extends AbstractStatefulView {
     this.setToggleAlreadyWatchedHandler(this._callback.toggleWatched);
     this.setToggleFavoritesHandler(this._callback.toggleFavorites);
   };
+
+  update(data) {
+
+    const {comments, commentId} = data;
+
+    if (commentId) {
+      this.updateElement(
+        {
+          ...this._state,
+          comments: [...this
+            ._state.comments
+            .filter((comment) => comment.id !== commentId)],
+          newComment: {
+            emoji: null,
+            text: null,
+          }
+        }
+      );
+      return;
+    }
+
+    if (comments) {
+      this.updateElement(
+        {
+          ...this._state,
+          comments: [...data.comments],
+          newComment: {
+            emoji: null,
+            text: null,
+          }
+        }
+      );
+    }
+  }
 }

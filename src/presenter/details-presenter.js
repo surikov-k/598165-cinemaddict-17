@@ -15,12 +15,14 @@ export default class DetailsPresenter {
     this.#cardsModel = cardsModel;
     this.#commentsModel = commentsModel;
     this.#changeData = changeData;
+
+    this.#commentsModel.addObserver(this.#handleModelEvent);
   }
 
-  open(card) {
+  async open(card) {
     this.#card = card;
     const preView = this.#view;
-    this.#comments = this.#commentsModel.getComments(this.#card);
+    this.#comments = await this.#commentsModel.get(this.#card);
     this.#view = new DetailsView(this.#card, this.#comments);
 
     this.#view.lockScroll();
@@ -92,7 +94,6 @@ export default class DetailsPresenter {
       UpdateType.PATCH,
       data
     );
-    return this.#commentsModel.getComments(this.#card);
   };
 
   #handleDeleteComment = (data) => {
@@ -101,9 +102,10 @@ export default class DetailsPresenter {
       UpdateType.PATCH,
       data
     );
-    this.#card = this.#cardsModel.getCard(data.card.id);
-    return this.#commentsModel.getComments(this.#card);
   };
 
+  #handleModelEvent = (updateType, data) => {
+    this.#view.update(data);
+  };
 }
 

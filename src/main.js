@@ -3,24 +3,29 @@ import CardsModel from './model/cards-model';
 import CommentsModel from './model/comments-model';
 import MainBoardView from './view/main-board-view';
 import ProfilePresenter from './presenter/profile-presenter';
-import {generateCard} from './mock/card';
-import {generateComment} from './mock/comment';
 import {render} from './framework/render';
 
-import {CARDS_COUNT, COMMENTS_COUNT} from './const';
+const AUTHORIZATION = 'Basic 9sd8f7a9sdf7';
+const END_POINT = 'https://17.ecmascript.pages.academy/cinemaddict';
 
-const cards = Array.from({length: CARDS_COUNT}, generateCard);
-const comments = Array.from({length: COMMENTS_COUNT}, generateComment);
 
-const cardsModel = new CardsModel(cards);
-const commentsModel = new CommentsModel(comments);
+import CardsApiServices from './services/cards-api-services';
+import CommentsApiService from './services/comments-api-service';
+
+
+const cardsModel = new CardsModel(new CardsApiServices(
+  END_POINT,
+  AUTHORIZATION
+));
+
+const commentsModel = new CommentsModel(new CommentsApiService(
+  END_POINT,
+  AUTHORIZATION
+));
 
 const siteMainElement = document.querySelector('.main');
 const header = document.querySelector('.header');
 
-document
-  .querySelector('.footer__statistics')
-  .textContent = cardsModel.cards.length;
 
 const profilePresenter  = new ProfilePresenter(header, cardsModel);
 profilePresenter.init();
@@ -35,4 +40,11 @@ const mainBoardPresenter = new BoardPresenter(
 
 mainBoardPresenter
   .init(mainBoardView.element);
+cardsModel.init()
+  .then(displayTotalMovies);
 
+function displayTotalMovies() {
+  document
+    .querySelector('.footer__statistics')
+    .textContent = cardsModel.cards.length;
+}

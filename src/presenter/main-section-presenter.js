@@ -3,7 +3,7 @@ import MainCardsSectionView from '../view/main-cards-section-view';
 import MoreButtonView from '../view/more-button-view';
 import NoCardsView from '../view/no-cards-view';
 import SortView from '../view/sort-view';
-import {CARDS_PER_CLICK, SortType} from '../const';
+import {CARDS_PER_CLICK, SortType, UpdateType} from '../const';
 import {filter} from '../utils/filter';
 import {remove, render, RenderPosition} from '../framework/render';
 import {sortByDate, sortByRating} from '../utils/sort';
@@ -28,6 +28,10 @@ export default class MainSectionPresenter {
     this.#commentsModel = commentsModel;
     this.#filterModel = filterModel;
     this.#handleViewAction = handleViewAction;
+
+    this.#cardsModel.addObserver(this.#handleModelEvent);
+    this.#commentsModel.addObserver(this.#handleModelEvent);
+    this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
   init(container) {
@@ -89,10 +93,8 @@ export default class MainSectionPresenter {
       this.#renderNoCards();
       return;
     }
-
-    if (cardsCount) {
-      this.#renderSort();
-    }
+    remove(this.#noCardsView);
+    this.#renderSort();
 
     this.cardsList.render(cards
       .slice(0, Math.min(cards.length, this.#renderedCardsCount)));
@@ -141,4 +143,26 @@ export default class MainSectionPresenter {
     this.#noCardsView = new NoCardsView(this.#filterModel.filter);
     render(this.#noCardsView, this.#view.element);
   }
+
+  #handleModelEvent = (updateType, data) => {
+    switch (updateType) {
+      case UpdateType.PATCH:
+        this.addCard(data.card);
+        break;
+      case UpdateType.MINOR:
+        this.clear();
+        this.render();
+        break;
+      case UpdateType.MAJOR:
+        this.clear({
+          resetRenderedCardsCount: true,
+          resetSortType: true
+        });
+        this.render();
+        break;
+      case UpdateType.INIT:
+        this.render();
+        break;
+    }
+  };
 }

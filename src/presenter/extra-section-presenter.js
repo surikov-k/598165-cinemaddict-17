@@ -1,28 +1,35 @@
 import ExtraCardsSectionView from '../view/extra-cards-section-view';
-import {remove, render} from '../framework/render';
 import ListPresenter from './list-presenter';
+import {UpdateType} from '../const';
+import {remove, render} from '../framework/render';
 
 export default class ExtraSectionPresenter {
-  #cards = null;
+  #cardsModel = null;
+  #commentsModel = null;
+  #cards = [];
   #cardsList = null;
   #container = null;
   #handleViewAction = null;
+  #getCards = () => {throw new Error('getCards is undefined');};
   #title = null;
   #view = null;
 
-  constructor(container, title, handleViewAction) {
-    this.#title = title;
-    this.#handleViewAction = handleViewAction;
+  constructor(container, title, cardsModel, commentsModel, handleViewAction, getCards) {
     this.#container = container;
+    this.#title = title;
+    this.#cardsModel = cardsModel;
+    this.#commentsModel = commentsModel;
+    this.#handleViewAction = handleViewAction;
+    this.#getCards = getCards;
+
+    this.#cardsModel.addObserver(this.#handleModelEvent);
+    this.#commentsModel.addObserver(this.#handleModelEvent);
   }
 
-  init(cards) {
-    if (!cards.length) {
-      return;
-    }
+  init() {
+    this.#cards = this.#getCards();
 
-    this.#cards = cards;
-    this.#view =  new ExtraCardsSectionView(this.#title);
+    this.#view = new ExtraCardsSectionView(this.#title);
     render(this.#view, this.#container);
 
     this.#cardsList = new ListPresenter(
@@ -40,8 +47,16 @@ export default class ExtraSectionPresenter {
     remove(this?.#view);
   }
 
-  update(cards) {
-    this.#clear();
-    this.init(cards);
-  }
+  #handleModelEvent = (updateType) => {
+    switch (updateType) {
+      case UpdateType.PATCH:
+      case UpdateType.MINOR:
+        this.#clear();
+        this.init();
+        break;
+      case UpdateType.INIT:
+        this.init();
+        break;
+    }
+  };
 }

@@ -3,7 +3,7 @@ import ExtraSectionPresenter from './extra-section-presenter';
 import FilterModel from '../model/filter-model';
 import FilterPresenter from './filter-presenter';
 import MainSectionPresenter from './main-section-presenter';
-import {UpdateType, UserAction} from '../const';
+import {UserAction} from '../const';
 
 const TOP_SECTION_TITLE = 'Top rated';
 const POPULAR_SECTION_TITLE = 'Most commented';
@@ -15,6 +15,7 @@ export default class BoardPresenter {
   #mainSectionPresenter = null;
   #topSectionPresenter = null;
   #popularSectionPresenter = null;
+  #detailsPresenter = null;
 
   #filterModel = null;
 
@@ -31,10 +32,6 @@ export default class BoardPresenter {
       this.#cardsModel);
     filterPresenter.init();
 
-    this.#cardsModel.addObserver(this.#handleModelEvent);
-    this.#commentsModel.addObserver(this.#handleModelEvent);
-    this.#filterModel.addObserver(this.#handleModelEvent);
-
     this.#mainSectionPresenter = new MainSectionPresenter(
       this.#cardsModel,
       this.#commentsModel,
@@ -46,19 +43,22 @@ export default class BoardPresenter {
     this.#topSectionPresenter = new ExtraSectionPresenter(
       container,
       TOP_SECTION_TITLE,
-      this.#handleViewAction);
-    this.#topSectionPresenter
-      .init(this.#cardsModel.topRatedCards);
+      this.#cardsModel,
+      this.#commentsModel,
+      this.#handleViewAction,
+      () => this.#cardsModel.topRatedCards
+    );
 
     this.#popularSectionPresenter = new ExtraSectionPresenter(
       container,
       POPULAR_SECTION_TITLE,
-      this.#handleViewAction
+      this.#cardsModel,
+      this.#commentsModel,
+      this.#handleViewAction,
+      () => this.#cardsModel.popularCards
     );
-    this.#popularSectionPresenter
-      .init(this.#cardsModel.popularCards);
 
-    this.details = new DetailsPresenter(
+    this.#detailsPresenter = new DetailsPresenter(
       this.#cardsModel,
       this.#commentsModel,
       this.#handleViewAction
@@ -77,38 +77,7 @@ export default class BoardPresenter {
         this.#commentsModel.delete(updateType, update);
         break;
       case UserAction.OPEN_DETAILS:
-        this.details.open(update);
-        break;
-    }
-  };
-
-  #handleModelEvent = (updateType, data) => {
-    const {card} = data;
-    switch (updateType) {
-      case UpdateType.PATCH:
-        this.#mainSectionPresenter.addCard(card);
-        this.#topSectionPresenter
-          .update(this.#cardsModel.topRatedCards);
-        this.#popularSectionPresenter
-          .update(this.#cardsModel.popularCards);
-
-        break;
-      case UpdateType.MINOR:
-        this.#mainSectionPresenter.clear();
-        this.#mainSectionPresenter.render();
-
-        this.#topSectionPresenter
-          .update(this.#cardsModel.topRatedCards);
-        this.#popularSectionPresenter
-          .update(this.#cardsModel.popularCards);
-
-        break;
-      case UpdateType.MAJOR:
-        this.#mainSectionPresenter.clear({
-          resetRenderedCardsCount: true,
-          resetSortType: true
-        });
-        this.#mainSectionPresenter.render();
+        this.#detailsPresenter.open(update);
         break;
     }
   };

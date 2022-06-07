@@ -17,6 +17,14 @@ const FilterType = {
   FAVORITES: 'favorite',
 };
 
+
+const Method = {
+  DELETE: 'DELETE',
+  GET: 'GET',
+  POST: 'POST',
+  PUT: 'PUT',
+};
+
 const SortType = {
   DEFAULT: 'default',
   DATE: 'date',
@@ -27,6 +35,7 @@ const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
+  INIT: 'INIT',
 };
 
 const UserAction = {
@@ -54,6 +63,7 @@ export {
   COMMENTS_COUNT,
   FilterType,
   Emoji,
+  Method,
   SortType,
   UpdateType,
   UserAction,
