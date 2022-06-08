@@ -11,6 +11,7 @@ const END_POINT = 'https://17.ecmascript.pages.academy/cinemaddict';
 
 import CardsApiServices from './services/cards-api-services';
 import CommentsApiService from './services/comments-api-service';
+import TotalMoviesPresenter from './presenter/total-movies-presenter';
 
 
 const cardsModel = new CardsModel(new CardsApiServices(
@@ -25,6 +26,7 @@ const commentsModel = new CommentsModel(new CommentsApiService(
 
 const siteMainElement = document.querySelector('.main');
 const header = document.querySelector('.header');
+const footer = document.querySelector('.footer');
 
 
 const profilePresenter  = new ProfilePresenter(header, cardsModel);
@@ -38,13 +40,8 @@ const mainBoardPresenter = new BoardPresenter(
   commentsModel
 );
 
+new TotalMoviesPresenter(footer, cardsModel);
+
 mainBoardPresenter
   .init(mainBoardView.element);
-cardsModel.init()
-  .then(displayTotalMovies);
-
-function displayTotalMovies() {
-  document
-    .querySelector('.footer__statistics')
-    .textContent = cardsModel.cards.length;
-}
+cardsModel.init();

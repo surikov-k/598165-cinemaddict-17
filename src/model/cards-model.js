@@ -18,7 +18,7 @@ export default class CardsModel extends Observable {
     } catch (err) {
       this.#cards = [];
     }
-    this._notify(UpdateType.INIT);
+    this._notify(UpdateType.INIT, this.#cards);
   }
 
   get cards() {

@@ -48,15 +48,6 @@ export default class SortView extends AbstractView {
       return;
     }
     evt.preventDefault();
-    // this.#addActiveClass(target);
     this._callback.changeType(target.dataset.sortType);
   };
-
-  // #addActiveClass = (target) => {
-  //   this.element.querySelectorAll('.sort__button')
-  //     .forEach((button) => button
-  //       .classList.remove(ACTIVE_CLASS));
-  //   target.classList
-  //     .add(ACTIVE_CLASS);
-  // };
 }
