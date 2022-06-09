@@ -603,6 +603,9 @@ button {
   color: #ffffff;
   cursor: pointer;
 }
+.film-details__control-button[disabled] {
+  cursor: wait;
+}
 .film-details__control-button:not(:first-of-type) {
   border-left: 1px solid #31353f
 }
@@ -692,6 +695,12 @@ button {
 .film-details__emoji-label:hover {
   opacity: 1;
 }
+
+form[disabled] .film-details__emoji-label:hover {
+  opacity: 0.5;
+  cursor: wait;
+}
+
 .film-details__emoji-item:checked + .film-details__emoji-label {
   opacity: 1;
 }
@@ -760,6 +769,17 @@ button {
 .film-details__comment-delete:hover {
   opacity: 0.7;
 }
+
+.film-details__comment-delete[disabled]{
+  color: gray;
+  text-decoration: none;
+  cursor: wait;
+}
+
+.film-details__comment-delete[disabled]:hover {
+  opacity: 1;
+}
+
 .film-details__comment-input {
   width: 100%;
   height: 50px;
@@ -776,6 +796,9 @@ button {
 }
 .film-details__comment-input::placeholder {
   color: #212126;
+}
+.film-details__comment-input[disabled] {
+  cursor: wait;
 }
 .film-details__comment-label {
   width: 100%;

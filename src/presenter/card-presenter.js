@@ -4,9 +4,9 @@ import {UpdateType, UserAction, UserDetail} from '../const';
 
 export class CardPresenter {
   #card = null;
-  #cardView = null;
+  #view = null;
   #container = null;
-  #changeData = () => {};
+  #changeData = () => {throw new Error('Change data function wasn\'t defined');};
 
   constructor(
     container,
@@ -22,39 +22,45 @@ export class CardPresenter {
 
   add(card) {
     this.#card = card;
-    const prevCardView = this.#cardView;
+    const prevCardView = this.#view;
 
-    this.#cardView = new CardView(this.#card);
+    this.#view = new CardView(this.#card);
 
-    this.#cardView.setOpenDetailsHandler(() => {
+    this.#view.setOpenDetailsHandler(() => {
       this.#changeData(
         UserAction.OPEN_DETAILS,
         null,
         this.#card
       );
     });
-    this.#cardView.setToggleWatchlistHandler(this.#handleAddToWatchlistClick);
-    this.#cardView.setToggleAlreadyWatchedHandler(this.#handleMarkAsWatchedClick);
-    this.#cardView.setToggleFavoritesHandler(this.#handleToggleFavoritesClick);
+    this.#view.setToggleWatchlistHandler(this.#handleAddToWatchlistClick);
+    this.#view.setToggleAlreadyWatchedHandler(this.#handleMarkAsWatchedClick);
+    this.#view.setToggleFavoritesHandler(this.#handleToggleFavoritesClick);
 
     if (prevCardView === null) {
-      render(this.#cardView, this.#container);
+      render(this.#view, this.#container);
       return;
     }
 
-    replace(this.#cardView, prevCardView);
+    replace(this.#view, prevCardView);
     remove(prevCardView);
   }
 
   destroy() {
-    remove(this.#cardView);
+    remove(this.#view);
   }
+
+  #setAborting = () => {
+    this.#view.shake();
+  };
 
   #handleAddToWatchlistClick = () => {
     this.#changeData(
       UserAction.UPDATE_CARD,
       UpdateType.MINOR,
-      {card: {...this.#updateUserDetails(UserDetail.WATCHLIST)}}
+      {card: this.#updateUserDetails(UserDetail.WATCHLIST)},
+      () => {},
+      this.#setAborting
     );
   };
 
@@ -62,7 +68,9 @@ export class CardPresenter {
     this.#changeData(
       UserAction.UPDATE_CARD,
       UpdateType.MINOR,
-      {card: this.#updateUserDetails(UserDetail.ALREADY_WATCHED)}
+      {card: this.#updateUserDetails(UserDetail.ALREADY_WATCHED)},
+      () => {},
+      this.#setAborting
     );
   };
 
@@ -70,7 +78,9 @@ export class CardPresenter {
     this.#changeData(
       UserAction.UPDATE_CARD,
       UpdateType.MINOR,
-      {card: this.#updateUserDetails(UserDetail.FAVORITE)}
+      {card: this.#updateUserDetails(UserDetail.FAVORITE)},
+      () => {},
+      this.#setAborting
     );
   };
 

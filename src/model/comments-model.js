@@ -1,5 +1,6 @@
 import Observable from '../framework/observable';
 import CardsModel from './cards-model';
+import {UserAction} from '../const';
 
 export default class CommentsModel extends Observable {
   #apiService = null;
@@ -14,7 +15,7 @@ export default class CommentsModel extends Observable {
     try {
       comments = await this.#apiService.get(card.id);
     } catch (err) {
-      comments = [];
+      comments = null;
     }
     return comments;
   }
@@ -27,6 +28,7 @@ export default class CommentsModel extends Observable {
       const payload = {
         card: CardsModel.adaptToClient(response.movie),
         comments: response.comments,
+        actionType: UserAction.ADD_COMMENT
       };
       card.comments = [...payload.card.comments];
       this._notify(updateType, payload);
@@ -40,7 +42,11 @@ export default class CommentsModel extends Observable {
     try {
       await this.#apiService.delete(commentId);
       card.comments = card.comments.filter((comment) => comment !== commentId);
-      this._notify(updateType, data);
+      this._notify(updateType, {
+        card,
+        commentId,
+        actionType: UserAction.DELETE_COMMENT
+      });
 
     } catch (err) {
       throw new Error('Can\'t delete the comment');

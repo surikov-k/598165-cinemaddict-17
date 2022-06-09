@@ -1,6 +1,6 @@
 import Observable from '../framework/observable';
 import {sortByComments, sortByRating} from '../utils/sort';
-import {UpdateType} from '../const';
+import {UpdateType, UserAction} from '../const';
 
 export default class CardsModel extends Observable {
   #cardsApiService = null;
@@ -43,7 +43,10 @@ export default class CardsModel extends Observable {
         updatedCard,
         ...this.#cards.slice(index + 1)
       ];
-      this._notify(updateType, update);
+      this._notify(updateType, {
+        actionType: UserAction.UPDATE_CARD,
+        card
+      });
     } catch (err) {
       throw new Error('Can\'t update the task');
     }

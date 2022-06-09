@@ -4,8 +4,7 @@ import {Emoji, UserDetail} from '../const';
 import {formatDate, formatDuration, humanizeDate} from '../utils/datetime';
 
 const createTemplate = (state) => {
-  const {card, comments} = state;
-
+  const {card, comments, isDisabled, isSaving, isUpdating, commentToDelete} = state;
   const {
     filmInfo: {
       actors,
@@ -49,10 +48,11 @@ const createTemplate = (state) => {
           name="comment-emoji" 
           type="radio" 
           id="emoji-${emoji}" 
+          ${isSaving ? 'disabled' : ''}
           value="${emoji}"
           ${emoji === selectedEmoji ? 'checked' : ''}>
         <label class="film-details__emoji-label" for="emoji-${emoji}">
-         <img src="./images/emoji/${emoji}.png" width="30" height="30" alt="emoji">
+         <img src="/images/emoji/${emoji}.png" width="30" height="30" alt="emoji">
         </label>
       `).join('\n')}
   </div>`);
@@ -75,7 +75,10 @@ const createTemplate = (state) => {
         <p class="film-details__comment-info">
           <span class="film-details__comment-author">${author}</span>
           <span class="film-details__comment-day">${humanizeDate(commentDate)}</span>
-          <button class="film-details__comment-delete" data-comment-id="${id}">Delete</button>
+          <button class="film-details__comment-delete" 
+          data-comment-id="${id}"
+          ${isDisabled && commentToDelete === id ? 'disabled' : ''}>
+          ${isDisabled && commentToDelete === id ? 'Deleting...' : 'Delete'}</button>
         </p>
       </div>
     </li>`;
@@ -83,14 +86,14 @@ const createTemplate = (state) => {
 
   return `
    <section class="film-details">
-    <form class="film-details__inner" action="" method="get">
+    <form class="film-details__inner" action="" method="get" ${isSaving ? 'disabled' : ''}>
       <div class="film-details__top-container">
         <div class="film-details__close">
           <button class="film-details__close-btn" type="button">close</button>
         </div>
         <div class="film-details__info-wrap">
           <div class="film-details__poster">
-            <img class="film-details__poster-img" src="${poster}" alt="Poster for src="${poster}">
+            <img class="film-details__poster-img" src="${poster}" alt="Poster for ${title}">
   
             <p class="film-details__age">${ageRating}+</p>
           </div>
@@ -145,31 +148,36 @@ const createTemplate = (state) => {
         </div>
   
         <section class="film-details__controls">
-          <button type="button" class="film-details__control-button film-details__control-button--watchlist ${toggleUserDetailsButton(watchlist)}" id="watchlist" name="watchlist">Add to watchlist</button>
-          <button type="button" class="film-details__control-button film-details__control-button--watched ${toggleUserDetailsButton(alreadyWatched)}" id="watched" name="watched">Already watched</button>
-          <button type="button" class="film-details__control-button film-details__control-button--favorite ${toggleUserDetailsButton(favorite)}" id="favorite" name="favorite">Add to favorites</button>
+          <button type="button" class="film-details__control-button film-details__control-button--watchlist ${toggleUserDetailsButton(watchlist)}" id="watchlist" name="watchlist" ${isUpdating ? 'disabled' : ''}>Add to watchlist</button>
+          <button type="button" class="film-details__control-button film-details__control-button--watched ${toggleUserDetailsButton(alreadyWatched)}" id="watched" name="watched" ${isUpdating ? 'disabled' : ''}>Already watched</button>
+          <button type="button" class="film-details__control-button film-details__control-button--favorite ${toggleUserDetailsButton(favorite)}" id="favorite" name="favorite" ${isUpdating ? 'disabled' : ''}>Add to favorites</button>
         </section>
       </div>
   
       <div class="film-details__bottom-container">
         <section class="film-details__comments-wrap">
+        ${comments !== null ? `
           <h3 class="film-details__comments-title">Comments 
           <span class="film-details__comments-count">${comments.length}</span>
-          </h3>
+          </h3>` : '<h3 class="film-details__comments-title">Can\'t load the comments</h3>'}
+          
   
           <ul class="film-details__comments-list">
-            ${comments.map(createComment).join('\n')}
+            ${comments?.map(createComment).join('\n') || ''}
           </ul>
   
           <div class="film-details__new-comment">
             <div class="film-details__add-emoji-label">
-            ${selectedEmoji
-    ? `<img src="./images/emoji/${selectedEmoji}.png" alt="emoji-${selectedEmoji}" width="55" height="55">`
-    : ''}
+            ${selectedEmoji ? `<img src="./images/emoji/${selectedEmoji}.png" alt="emoji-${selectedEmoji}" width="55" height="55">` : ''}
             </div>
   
             <label class="film-details__comment-label">
-              <textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment">${state.newComment.text ? state.newComment.text : ''}</textarea>
+              <textarea 
+              class="film-details__comment-input" 
+              placeholder="Select reaction below and write comment here" 
+              name="comment"
+               ${isSaving ? 'disabled' : ''}
+              >${state.newComment.text ? state.newComment.text : ''}</textarea>
             </label>
             ${getEmojiList()}
         </section>
@@ -179,7 +187,6 @@ const createTemplate = (state) => {
 };
 
 export default class DetailsView extends AbstractStatefulView {
-
   constructor(card, comments) {
     super();
 
@@ -191,6 +198,10 @@ export default class DetailsView extends AbstractStatefulView {
         text: null,
       },
       scroll: null,
+      isDisabled: false,
+      isSaving: false,
+      isUpdating: false,
+      commentToDelete: null,
     };
     this.#setInnerHandlers();
   }
@@ -251,6 +262,8 @@ export default class DetailsView extends AbstractStatefulView {
     }
     evt.preventDefault();
     const deletedCommentId = evt.target.dataset.commentId;
+    this._state.commentToDelete = deletedCommentId;
+
     this._callback.deleteComment({
       card: this._state.card,
       commentId: deletedCommentId
@@ -272,8 +285,8 @@ export default class DetailsView extends AbstractStatefulView {
     this._callback.toggleWatchlist = callback;
     this.element.querySelector('.film-details__control-button--watchlist')
       .addEventListener('click', () => {
-        this.#toggleButton(UserDetail.WATCHLIST);
-        this._callback.toggleWatchlist(this._state.card);
+        this._callback
+          .toggleWatchlist(this.#toggleUserDetails(UserDetail.WATCHLIST));
       });
   };
 
@@ -281,8 +294,8 @@ export default class DetailsView extends AbstractStatefulView {
     this._callback.toggleWatched = callback;
     this.element.querySelector('.film-details__control-button--watched')
       .addEventListener('click', () => {
-        this.#toggleButton(UserDetail.ALREADY_WATCHED);
-        this._callback.toggleWatched(this._state.card);
+        this._callback
+          .toggleWatched(this.#toggleUserDetails(UserDetail.ALREADY_WATCHED));
       });
   };
 
@@ -290,24 +303,19 @@ export default class DetailsView extends AbstractStatefulView {
     this._callback.toggleFavorites = callback;
     this.element.querySelector('.film-details__control-button--favorite')
       .addEventListener('click', () => {
-        this.#toggleButton(UserDetail.FAVORITE);
-        this._callback.toggleFavorites(this._state.card);
+        this._callback
+          .toggleFavorites(this.#toggleUserDetails(UserDetail.FAVORITE));
 
       });
   };
 
-  #toggleButton = (button) => {
-    this.updateElement({
-      ...this._state,
-      card: {
-        ...this._state.card,
-        userDetails: {
-          ...this._state.card.userDetails,
-          [button]: !this._state.card.userDetails[button]
-        }
-      }
-    });
-  };
+  #toggleUserDetails = (userDetail) => ({
+    ...this._state.card,
+    userDetails: {
+      ...this._state.card.userDetails,
+      [userDetail]: !this._state.card.userDetails[userDetail]
+    }
+  });
 
   #setChooseEmoji = () => {
     const emojiList = this.element
@@ -363,38 +371,4 @@ export default class DetailsView extends AbstractStatefulView {
     this.setToggleAlreadyWatchedHandler(this._callback.toggleWatched);
     this.setToggleFavoritesHandler(this._callback.toggleFavorites);
   };
-
-  update(data) {
-
-    const {comments, commentId} = data;
-
-    if (commentId) {
-      this.updateElement(
-        {
-          ...this._state,
-          comments: [...this
-            ._state.comments
-            .filter((comment) => comment.id !== commentId)],
-          newComment: {
-            emoji: null,
-            text: null,
-          }
-        }
-      );
-      return;
-    }
-
-    if (comments) {
-      this.updateElement(
-        {
-          ...this._state,
-          comments: [...data.comments],
-          newComment: {
-            emoji: null,
-            text: null,
-          }
-        }
-      );
-    }
-  }
 }

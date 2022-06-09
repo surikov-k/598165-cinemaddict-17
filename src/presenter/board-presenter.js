@@ -4,9 +4,15 @@ import FilterModel from '../model/filter-model';
 import FilterPresenter from './filter-presenter';
 import MainSectionPresenter from './main-section-presenter';
 import {UserAction} from '../const';
+import UiBlocker from '../framework/ui-blocker/ui-blocker';
 
 const TOP_SECTION_TITLE = 'Top rated';
 const POPULAR_SECTION_TITLE = 'Most commented';
+
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000
+};
 
 export default class BoardPresenter {
   #cardsModel = null;
@@ -18,6 +24,7 @@ export default class BoardPresenter {
   #detailsPresenter = null;
 
   #filterModel = null;
+  #uiBlocker = new UiBlocker(TimeLimit.LOWER_LIMIT, TimeLimit.UPPER_LIMIT);
 
   constructor(cardsModel, commentsModel) {
     this.#cardsModel = cardsModel;
@@ -65,20 +72,39 @@ export default class BoardPresenter {
     );
   }
 
-  #handleViewAction = (actionType, updateType, update) => {
+  #handleViewAction = async (
+    actionType, updateType,
+    update,
+    setViewFeedBack = () => {},
+    setAborting = () => {}) => {
+    this.#uiBlocker.block();
+    setViewFeedBack();
     switch (actionType) {
       case UserAction.UPDATE_CARD:
-        this.#cardsModel.update(updateType, update);
+        try {
+          await  this.#cardsModel.update(updateType, update);
+        } catch (err) {
+          setAborting();
+        }
         break;
       case UserAction.ADD_COMMENT:
-        this.#commentsModel.add(updateType, update);
+        try {
+          await this.#commentsModel.add(updateType, update);
+        } catch (err) {
+          setAborting();
+        }
         break;
       case UserAction.DELETE_COMMENT:
-        this.#commentsModel.delete(updateType, update);
+        try {
+          await this.#commentsModel.delete(updateType, update);
+        } catch (err) {
+          setAborting();
+        }
         break;
       case UserAction.OPEN_DETAILS:
         this.#detailsPresenter.open(update);
         break;
     }
+    this.#uiBlocker.unblock();
   };
 }
