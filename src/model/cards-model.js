@@ -48,7 +48,7 @@ export default class CardsModel extends Observable {
         card
       });
     } catch (err) {
-      throw new Error('Can\'t update the task');
+      throw new Error('Can\'t update the card');
     }
   }
 

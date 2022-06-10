@@ -227,28 +227,30 @@ export default class DetailsView extends AbstractStatefulView {
     this._callback.addComment = callback;
 
     this.element.querySelector('.film-details__comment-input')
-      .addEventListener('keydown', (evt) => {
-        const {
-          text: newComment,
-          emoji: newEmoji
-        } = this._state.newComment;
+      .addEventListener('keydown', this.#addCommentHandler);
+  }
 
-        if (evt.key === 'Enter' && evt.metaKey) {
+  #addCommentHandler = (evt) => {
+    const {
+      text: newComment,
+      emoji: newEmoji
+    } = this._state.newComment;
 
-          if (!(newComment && newEmoji)) {
-            return;
-          }
+    if (evt.key === 'Enter' && (evt.metaKey || evt.ctrlKey)) {
 
-          this._callback.addComment({
-            card: this._state.card,
-            comment: {
-              comment: newComment,
-              emotion: this._state.newComment.emoji,
-            }
-          });
+      if (!(newComment && newEmoji)) {
+        return;
+      }
+
+      this._callback.addComment({
+        card: this._state.card,
+        comment: {
+          comment: newComment,
+          emotion: this._state.newComment.emoji,
         }
       });
-  }
+    }
+  };
 
   #closeHandler = (evt) => {
     evt.preventDefault();
@@ -358,8 +360,6 @@ export default class DetailsView extends AbstractStatefulView {
     this.#setChooseEmoji();
     this.#setChangeCommentText();
     this.#setSaveScrollPosition();
-    this.setAddCommentHandler(this._callback.addComment);
-    this.setDeleteCommentHandler(this._callback.deleteComment);
   }
 
   _restoreHandlers = () => {
@@ -370,5 +370,7 @@ export default class DetailsView extends AbstractStatefulView {
     this.setToggleWatchlistHandler(this._callback.toggleWatchlist);
     this.setToggleAlreadyWatchedHandler(this._callback.toggleWatched);
     this.setToggleFavoritesHandler(this._callback.toggleFavorites);
+    this.setAddCommentHandler(this._callback.addComment);
+    this.setDeleteCommentHandler(this._callback.deleteComment);
   };
 }
