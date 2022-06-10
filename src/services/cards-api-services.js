@@ -47,5 +47,4 @@ export default class CardsApiServices extends ApiService {
       }
     };
   }
-
 }

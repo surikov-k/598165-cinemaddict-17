@@ -27,7 +27,7 @@ export default class DetailsPresenter {
     this.#view = new DetailsView(this.#card, this.#comments);
 
     this.#view.lockScroll();
-    this.#view.setCloseHandler(this.close);
+    this.#view.setCloseHandler(this.#close);
 
     this.#view.setToggleWatchlistHandler(this.#handleAddToWatchlistClick);
     this.#view.setToggleAlreadyWatchedHandler(this.#handleMarkAsWatchedClick);
@@ -50,14 +50,14 @@ export default class DetailsPresenter {
     remove(preView);
   }
 
-  close = () => {
+  #close = () => {
     this.#view.unlockScroll();
     window.removeEventListener('keydown', this.#onEscKeydown);
     remove(this.#view);
     this.#view = null;
   };
 
-  setUpdating = () => {
+  #setUpdating = () => {
     this.#view.updateElement({
       isUpdating: true,
       isDisabled: true,
@@ -65,21 +65,21 @@ export default class DetailsPresenter {
 
   };
 
-  setSaving = () => {
+  #setSaving = () => {
     this.#view.updateElement({
       isDisabled: true,
       isSaving: true,
     });
   };
 
-  setDeleting = () => {
+  #setDeleting = () => {
     this.#view.updateElement({
       isDisabled: true,
       isDeleting: true,
     });
   };
 
-  resetView = () => {
+  #resetView = () => {
     this.#view.updateElement({
       isDisabled: false,
       isSaving: false,
@@ -92,15 +92,14 @@ export default class DetailsPresenter {
     if (evt.key === 'Escape' && !this.#view.isInputActive()) {
       evt.preventDefault();
       this.#view.unlockScroll();
-      this.close();
+      this.#close();
     }
   };
 
-  shakeControls = (callback) => () => {
+  #shakeControls = (callback) => () => {
     this.#view.shake
       .call({
-        element: this.#view.element
-          .querySelector('.film-details__controls')
+        element: this.#view.getControlsElement()
       }, callback);
   };
 
@@ -109,8 +108,8 @@ export default class DetailsPresenter {
       UserAction.UPDATE_CARD,
       UpdateType.MINOR,
       {card},
-      this.setUpdating,
-      this.shakeControls(this.resetView)
+      this.#setUpdating,
+      this.#shakeControls(this.#resetView)
     );
   };
 
@@ -119,8 +118,8 @@ export default class DetailsPresenter {
       UserAction.UPDATE_CARD,
       UpdateType.MINOR,
       {card},
-      this.setUpdating,
-      this.shakeControls(this.resetView)
+      this.#setUpdating,
+      this.#shakeControls(this.#resetView)
     );
   };
 
@@ -129,8 +128,8 @@ export default class DetailsPresenter {
       UserAction.UPDATE_CARD,
       UpdateType.MINOR,
       {card},
-      this.setUpdating,
-      this.shakeControls(this.resetView)
+      this.#setUpdating,
+      this.#shakeControls(this.#resetView)
     );
   };
 
@@ -139,22 +138,19 @@ export default class DetailsPresenter {
       UserAction.ADD_COMMENT,
       UpdateType.PATCH,
       data,
-      this.setSaving,
+      this.#setSaving,
       () => {
-        this.#view.shake(this.resetView);
+        this.#view.shake(this.#resetView);
       }
     );
   };
 
-  shakeComment = (commentId, callback) => () => {
+  #shakeComment = (commentId, callback) => () => {
     this.#view.shake
       .call({
-        element: this.#view.element
-          .querySelector(`button[data-comment-id="${commentId}"]`)
-          .closest('.film-details__comment')
+        element: this.#view.getCommentElement(commentId)
       }, callback);
   };
-
 
   #handleDeleteComment = (data) => {
     const {commentId} = data;
@@ -163,8 +159,8 @@ export default class DetailsPresenter {
       UserAction.DELETE_COMMENT,
       UpdateType.PATCH,
       data,
-      this.setDeleting,
-      this.shakeComment(commentId, this.resetView)
+      this.#setDeleting,
+      this.#shakeComment(commentId, this.#resetView)
     );
   };
 

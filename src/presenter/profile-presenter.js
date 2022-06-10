@@ -1,6 +1,6 @@
-import {remove, render, replace} from '../framework/render';
 import ProfileView from '../view/profile-view';
 import {UserStatus} from '../const';
+import {remove, render, replace} from '../framework/render';
 
 export default class ProfilePresenter {
   #cardsModel = null;

@@ -14,7 +14,7 @@ export default class CommentsModel extends Observable {
     let comments;
     try {
       comments = await this.#apiService.get(card.id);
-    } catch (err) {
+    } catch (error) {
       comments = null;
     }
     return comments;
@@ -32,7 +32,7 @@ export default class CommentsModel extends Observable {
       };
       card.comments = [...payload.card.comments];
       this._notify(updateType, payload);
-    } catch (err) {
+    } catch (error) {
       throw new Error('Can\'t add the comment');
     }
   }
@@ -48,7 +48,7 @@ export default class CommentsModel extends Observable {
         actionType: UserAction.DELETE_COMMENT
       });
 
-    } catch (err) {
+    } catch (error) {
       throw new Error('Can\'t delete the comment');
     }
   }

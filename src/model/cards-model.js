@@ -15,7 +15,7 @@ export default class CardsModel extends Observable {
     try {
       const cards = await this.#cardsApiService.cards;
       this.#cards = cards.map(CardsModel.adaptToClient);
-    } catch (err) {
+    } catch (error) {
       this.#cards = [];
     }
     this._notify(UpdateType.INIT, this.#cards);

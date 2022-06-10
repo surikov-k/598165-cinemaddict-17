@@ -41,7 +41,7 @@ export default class MainSectionPresenter {
       this.#view,
       this.#handleViewAction
     );
-    this.render();
+    this.#render();
   }
 
   get cards() {
@@ -59,11 +59,11 @@ export default class MainSectionPresenter {
     return filteredCards;
   }
 
-  addCard(card) {
+  #addCard(card) {
     this.cardsList.addCard(card);
   }
 
-  clear({
+  #clear({
     resetRenderedCardsCount = false,
     resetSortType = false,
   } = {}) {
@@ -83,7 +83,7 @@ export default class MainSectionPresenter {
     }
   }
 
-  render() {
+  #render() {
     this.#listContainer = this.#view.element
       .querySelector('.films-list__container');
     const cards = this.cards;
@@ -118,6 +118,11 @@ export default class MainSectionPresenter {
     this.#sortView.setChangeTypeHandler(this.#handelSortTypeChange);
   }
 
+  #renderNoCards() {
+    this.#noCardsView = new NoCardsView(this.#filterModel.filter);
+    render(this.#noCardsView, this.#view.element);
+  }
+
   #handleLoadMoreButtonClick = () => {
     const nextSlice = Math.min(this.cards.length, this.#renderedCardsCount + CARDS_PER_CLICK);
     const cards = this.cards.slice(this.#renderedCardsCount, nextSlice);
@@ -135,33 +140,28 @@ export default class MainSectionPresenter {
       return;
     }
     this.#currentSortType = type;
-    this.clear({resetRenderedCardsCount: true});
-    this.render();
+    this.#clear({resetRenderedCardsCount: true});
+    this.#render();
   };
-
-  #renderNoCards() {
-    this.#noCardsView = new NoCardsView(this.#filterModel.filter);
-    render(this.#noCardsView, this.#view.element);
-  }
 
   #handleModelEvent = (updateType, data) => {
     switch (updateType) {
       case UpdateType.PATCH:
-        this.addCard(data.card);
+        this.#addCard(data.card);
         break;
       case UpdateType.MINOR:
-        this.clear();
-        this.render();
+        this.#clear();
+        this.#render();
         break;
       case UpdateType.MAJOR:
-        this.clear({
+        this.#clear({
           resetRenderedCardsCount: true,
           resetSortType: true
         });
-        this.render();
+        this.#render();
         break;
       case UpdateType.INIT:
-        this.render();
+        this.#render();
         break;
     }
   };

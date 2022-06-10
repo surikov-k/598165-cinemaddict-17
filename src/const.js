@@ -1,6 +1,4 @@
-const CARDS_COUNT = 12;
 const CARDS_PER_CLICK = 5;
-const COMMENTS_COUNT = 50;
 
 const Emoji = {
   SMILE: 'smile',
@@ -16,7 +14,6 @@ const FilterType = {
   HISTORY: 'history',
   FAVORITES: 'favorite',
 };
-
 
 const Method = {
   DELETE: 'DELETE',
@@ -58,9 +55,7 @@ const UserStatus = {
 };
 
 export {
-  CARDS_COUNT,
   CARDS_PER_CLICK,
-  COMMENTS_COUNT,
   FilterType,
   Emoji,
   Method,

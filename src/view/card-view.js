@@ -69,38 +69,38 @@ export default class CardView extends AbstractView {
     return createTemplate(this.#card);
   }
 
-  setOpenDetailsHandler = (callback) => {
+  setOpenDetailsHandler(callback) {
     this._callback.openDetails = callback;
     this.element.querySelector('.film-card__link')
       .addEventListener('click', this.#openDetailsHandler);
-  };
+  }
 
-  #openDetailsHandler = (evt) => {
-    evt.preventDefault();
-    this._callback.openDetails();
-  };
-
-  setToggleWatchlistHandler = (callback) => {
+  setToggleWatchlistHandler(callback) {
     this._callback.toggleWatchlist = callback;
     this.element.querySelector('.film-card__controls-item--add-to-watchlist')
       .addEventListener('click', () => {
         this._callback.toggleWatchlist();
       });
-  };
+  }
 
-  setToggleAlreadyWatchedHandler = (callback) => {
+  setToggleAlreadyWatchedHandler(callback)  {
     this._callback.toggleWatched = callback;
     this.element.querySelector('.film-card__controls-item--mark-as-watched')
       .addEventListener('click', () => {
         this._callback.toggleWatched();
       });
-  };
+  }
 
-  setToggleFavoritesHandler = (callback) => {
+  setToggleFavoritesHandler (callback) {
     this._callback.toggleFavorites = callback;
     this.element.querySelector('.film-card__controls-item--favorite')
       .addEventListener('click', () => {
         this._callback.toggleFavorites();
       });
+  }
+
+  #openDetailsHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.openDetails();
   };
 }
