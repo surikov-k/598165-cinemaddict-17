@@ -3,17 +3,17 @@ import {sortByComments, sortByRating} from '../utils/sort';
 import {UpdateType, UserAction} from '../const';
 
 export default class CardsModel extends Observable {
-  #cardsApiService = null;
+  #apiService = null;
   #cards = [];
 
   constructor(cardsApiService) {
     super();
-    this.#cardsApiService = cardsApiService;
+    this.#apiService = cardsApiService;
   }
 
   async init() {
     try {
-      const cards = await this.#cardsApiService.cards;
+      const cards = await this.#apiService.cards;
       this.#cards = cards.map(CardsModel.adaptToClient);
     } catch (error) {
       this.#cards = [];
@@ -35,7 +35,7 @@ export default class CardsModel extends Observable {
     }
 
     try {
-      const response = await this.#cardsApiService.update(card);
+      const response = await this.#apiService.update(card);
       const updatedCard = CardsModel.adaptToClient(response);
 
       this.#cards = [
