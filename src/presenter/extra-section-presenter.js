@@ -29,6 +29,10 @@ export default class ExtraSectionPresenter {
   init() {
     this.#cards = this.#getCards();
 
+    if (!this.#cards.length) {
+      return;
+    }
+
     this.#view = new ExtraCardsSectionView(this.#title);
     render(this.#view, this.#container);
 

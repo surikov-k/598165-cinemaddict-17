@@ -41,7 +41,6 @@ export default class MainSectionPresenter {
       this.#view,
       this.#handleViewAction
     );
-    this.#render();
   }
 
   get cards() {
