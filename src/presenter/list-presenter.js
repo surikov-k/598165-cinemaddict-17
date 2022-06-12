@@ -1,12 +1,15 @@
 import {CardPresenter} from './card-presenter';
 
 export default class ListPresenter {
+  #container = null;
   #handleViewAction = null;
   #listPresenters = new Map();
   #view = null;
 
   constructor(view, handleViewAction) {
     this.#view = view;
+    this.#container = this.#view.element
+      .querySelector('.films-list__container');
     this.#handleViewAction = handleViewAction;
   }
 
@@ -14,7 +17,7 @@ export default class ListPresenter {
     cards
       .forEach((card) => {
         const cardPresenter = new CardPresenter(
-          this.#view.element.querySelector('.films-list__container'),
+          this.#container,
           this.#handleViewAction,
         );
 
