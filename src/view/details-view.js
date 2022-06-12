@@ -4,7 +4,7 @@ import {Emoji, UserDetail} from '../const';
 import {formatDate, formatDuration, humanizeDate} from '../utils/datetime';
 
 const createTemplate = (state) => {
-  const {card, comments, isDisabled, isSaving, isUpdating, commentToDelete} = state;
+  const {card, comments, isDisabled, isLoading, isSaving, isUpdating, commentToDelete} = state;
   const {
     filmInfo: {
       actors,
@@ -158,7 +158,7 @@ const createTemplate = (state) => {
         <section class="film-details__comments-wrap">
         ${comments !== null ? `
           <h3 class="film-details__comments-title">Comments 
-          <span class="film-details__comments-count">${comments.length}</span>
+          <span class="film-details__comments-count">${isLoading ? 'are being loaded...' : comments.length}</span>
           </h3>` : '<h3 class="film-details__comments-title">Can\'t load the comments</h3>'}
           
   
@@ -199,6 +199,7 @@ export default class DetailsView extends AbstractStatefulView {
       },
       scroll: null,
       isDisabled: false,
+      isLoading: true,
       isSaving: false,
       isUpdating: false,
       commentToDelete: null,

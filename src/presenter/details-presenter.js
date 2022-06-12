@@ -1,6 +1,7 @@
 import DetailsView from '../view/details-view';
 import {remove, render, replace} from '../framework/render';
 import {UpdateType, UserAction} from '../const';
+import {debounce} from '../utils/debounce';
 
 export default class DetailsPresenter {
   #card = null;
@@ -20,10 +21,10 @@ export default class DetailsPresenter {
     this.#cardsModel.addObserver(this.#handleModelEvent);
   }
 
-  async open(card) {
+  open(card) {
     this.#card = card;
     const preView = this.#view;
-    this.#comments = await this.#commentsModel.get(this.#card);
+    this.#comments = [];
     this.#view = new DetailsView(this.#card, this.#comments);
 
     this.#view.lockScroll();
@@ -40,15 +41,25 @@ export default class DetailsPresenter {
 
     if (preView === null) {
       render(this.#view, this.#container);
+      this.#loadComments();
       return;
     }
 
-    if (this.#container.contains(preView.element)) {
-      replace(this.#view, preView);
-    }
+    replace(this.#view, preView);
+    this.#loadComments();
 
     remove(preView);
+    this.#comments = [];
   }
+
+  #loadComments = debounce(async () => {
+    this.#comments = await this.#commentsModel.get(this.#card);
+
+    this.#view.updateElement({
+      comments: this.#comments,
+      isLoading: false
+    });
+  });
 
   #close = () => {
     this.#view.unlockScroll();
